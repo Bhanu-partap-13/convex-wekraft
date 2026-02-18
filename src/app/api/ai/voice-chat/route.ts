@@ -1,25 +1,19 @@
-import { ConvexHttpClient } from "convex/browser";
-import { convertToModelMessages, stepCountIs, streamText, tool } from "ai";
+import { google } from "@ai-sdk/google";
 import {
-  type InferUITools,
-  type ToolSet,
+  convertToModelMessages,
+  streamText,
   type UIDataTypes,
   type UIMessage,
 } from "ai";
-import { z } from "zod";
-import { api } from "../../../../../convex/_generated/api";
-import { Id } from "../../../../../convex/_generated/dataModel";
-import { google } from "@ai-sdk/google";
+import { ConvexHttpClient } from "convex/browser";
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-
+const _convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL ?? "");
 
 export type ChatMessage = UIMessage<never, UIDataTypes>;
 
 export async function POST(req: Request) {
   try {
-    const { messages }: { messages: ChatMessage[] } =
-      await req.json();
+    const { messages }: { messages: ChatMessage[] } = await req.json();
     console.log("Message recieved API/AGENT/CHAT: --------->", messages);
 
     const systemPrompt = `You are highly professional Agentic Assistant that helps user manage their project. Your messgae will be feeded to voice agents so u need to generate message accordingling naturally so make user feel he is talking to a real natutal voice agent in real time.`;

@@ -1,26 +1,23 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { useMutation, useQuery } from "convex/react";
 import {
-  Github,
   Check,
   Loader2,
-  LucideGitBranch,
   LucideExternalLink,
+  LucideGitBranch,
   Star,
-  GitFork,
-  Play,
 } from "lucide-react";
-import { useRepositories } from "./repo";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
 import { useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { api } from "../../../convex/_generated/api";
 import { createWebhook } from "../github/action";
 import { ConnectRepo } from ".";
+import { useRepositories } from "./repo";
 
 interface Repository {
   id: number;

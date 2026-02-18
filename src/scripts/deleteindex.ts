@@ -5,7 +5,6 @@ import dotenv from "dotenv";
 //  explicitly load env
 dotenv.config({ path: ".env.local" });
 
-
 console.log("PINECONE_API_KEY exists:", !!process.env.PINECONE_API_KEY);
 
 async function main() {
@@ -17,8 +16,8 @@ async function main() {
     console.error("❌ Error deleting vectors:");
     console.error(error);
     if (error instanceof Error) {
-        console.error("Message:", error.message);
-        console.error("Stack:", error.stack);
+      console.error("Message:", error.message);
+      console.error("Stack:", error.stack);
     }
   }
 }

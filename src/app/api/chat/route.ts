@@ -1,8 +1,11 @@
-import { openai } from "@ai-sdk/openai";
-import { streamText, convertToModelMessages } from "ai";
-import { validateERModel, generateSessionId } from "@/modules/my-project/ErHelper";
+import { google } from "@ai-sdk/google";
+import { convertToModelMessages, streamText } from "ai";
 import { NextResponse } from "next/server";
 import { parseSchemaWithGemini } from "@/lib/Gemini";
+import {
+  generateSessionId,
+  validateERModel,
+} from "@/modules/my-project/ErHelper";
 
 export const maxDuration = 30;
 
@@ -31,7 +34,7 @@ function detectSchema(content: string): boolean {
   const lowerContent = content.toLowerCase();
   return (
     schemaKeywords.some((keyword) =>
-      lowerContent.includes(keyword.toLowerCase())
+      lowerContent.includes(keyword.toLowerCase()),
     ) && content.length > 100
   );
 }
@@ -83,7 +86,7 @@ export async function POST(req: Request) {
                       (r: any) =>
                         `    - ${r.type} to ${r.to} (via ${
                           r.fromField || "id"
-                        } -> ${r.toField || "id"})`
+                        } -> ${r.toField || "id"})`,
                     )
                     .join("\n")
                 : "";
@@ -125,11 +128,11 @@ export async function POST(req: Request) {
           return NextResponse.json(
             {
               error: `Schema validation failed: ${validation.errors.join(
-                ", "
+                ", ",
               )}`,
               type: "error",
             },
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -142,11 +145,11 @@ export async function POST(req: Request) {
           ermodel.entities.length
         } tables:\n\n${ermodel.entities
           .map(
-            (e:any) =>
-              `• **${e.name}** (${e.fields.length} fields, ${e.relations.length} relations)`
+            (e: any) =>
+              `• **${e.name}** (${e.fields.length} fields, ${e.relations.length} relations)`,
           )
           .join(
-            "\n"
+            "\n",
           )}\n\nThe ER diagram has been generated. What would you like to know about your schema?`;
 
         // Return both schema and response
@@ -166,7 +169,7 @@ export async function POST(req: Request) {
             }`,
             type: "error",
           },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
@@ -178,7 +181,6 @@ export async function POST(req: Request) {
       sessionId = generateSessionId();
       console.log("Generated new sessionId for chat:", sessionId);
     }
-
 
     // Provide clarity if no schema is present
     const schemaInstructions = schemaInfo
@@ -199,7 +201,7 @@ ${schemaInfo}
 `;
 
     const result = streamText({
-      model: openai("gpt-4.1-mini"),
+      model: google("gemini-1.5-flash"),
       system: systemPrompt,
       messages: await convertToModelMessages(messages),
     });
@@ -211,7 +213,7 @@ ${schemaInfo}
       JSON.stringify({
         error: error instanceof Error ? error.message : "Unknown error",
       }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }
 }

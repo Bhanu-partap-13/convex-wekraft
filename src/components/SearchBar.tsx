@@ -1,29 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
+import { ChevronDown, Rocket, Search, Users, Wrench } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Typewriter } from "react-simple-typewriter";
-
-import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-
-import {
-  Rocket,
-  ShoppingBag,
-  Users,
-  Wrench,
-  ChevronDown,
-  Search,
-} from "lucide-react";
-
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 const MODES = [
   {
@@ -70,7 +60,9 @@ export function CommunitySearchBar() {
     }
 
     // Redirect instantly to community with query and mode
-    router.push(`/dashboard/community?query=${encodeURIComponent(query)}&mode=${mode.id}`);
+    router.push(
+      `/dashboard/community?query=${encodeURIComponent(query)}&mode=${mode.id}`,
+    );
   };
 
   return (

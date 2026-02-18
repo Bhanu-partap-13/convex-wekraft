@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
         "============Pushed Event Triggered for COMMIT !============",
       );
       // console.log("============FOR PUSH COMMIT DETAILS : ===================", body)
-      const commits = body.commits || [];
+      const _commits = body.commits || [];
       const repo = body.repository.full_name;
       const [owner, repoName] = repo.split("/");
       const branch = body.ref.replace("refs/heads/", "");
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       const issue = body.issue;
       const repo = body.repository.full_name;
       const sender = body.sender; // ✅ Person who triggered the action
-      const [owner, repoName] = repo.split("/");
+      const [_owner, _repoName] = repo.split("/");
 
       //     Issue event received: {
       // action: 'closed',
@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
         prUrl,
         repo,
       });
-      const [owner, repoName] = repo.split("/");
+      const [_owner, _repoName] = repo.split("/");
 
       if (action === "opened") {
         console.log("Triggering AI review for new PR...");

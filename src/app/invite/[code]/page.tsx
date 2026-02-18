@@ -1,10 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
+import {
+  ChevronLeft,
+  Loader2,
+  LucideExternalLink,
+  LucideLogIn,
+} from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner"; // Assuming sonner is used based on list_dir
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,15 +21,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner"; // Assuming sonner is used based on list_dir
-import {
-  ChevronLeft,
-  Loader2,
-  LucideExternalLink,
-  LucideLogIn,
-  LucideUser2,
-} from "lucide-react";
-import Link from "next/link";
+import { api } from "../../../../convex/_generated/api";
 
 const InvitePage = () => {
   const params = useParams();
@@ -68,7 +67,7 @@ const InvitePage = () => {
       toast.success("Join request sent successfully!");
       setIsOpen(false);
       setMessage("");
-    } catch (error: any) {
+    } catch (_error: any) {
       toast.error("Failed to send join request");
     } finally {
       setIsSubmitting(false);
@@ -213,11 +212,11 @@ const InvitePage = () => {
                   </div>
                 </DialogContent>
               </Dialog>
-            <Link href="/dashboard" >
-              <Button className=" h-9 bg-white text-black cursor-pointer text-xs">
-                <ChevronLeft /> Go Back
-              </Button>
-            </Link>
+              <Link href="/dashboard">
+                <Button className=" h-9 bg-white text-black cursor-pointer text-xs">
+                  <ChevronLeft /> Go Back
+                </Button>
+              </Link>
             </div>
             <p className="text-xs text-center text-white">
               You're logged in. A request will be sent to the owner.

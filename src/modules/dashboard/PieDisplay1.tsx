@@ -1,15 +1,15 @@
 "use client";
 
-import { Pie, PieChart, ResponsiveContainer, Cell, Label } from "recharts";
+import { Info } from "lucide-react";
+import { useState } from "react";
+import { Cell, Label, Pie, PieChart, ResponsiveContainer } from "recharts";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { calculateImpactScore } from "./ImpactScore";
-import { Info } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -18,10 +18,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
 import { Label as LabelUI } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { calculateImpactScore } from "./ImpactScore";
 
 const COLORS = [
   "var(--chart-1)",
@@ -59,70 +58,72 @@ export function PieChartVariant1({ stats }: ImpactScoreDisplayProps) {
 
   return (
     <>
-    <h1 className="text-center text-sm text-muted-foreground mb-2">Account Age: {Math.floor(stats.accountAgeInYears)} years</h1>
-    <ChartContainer config={chartConfig} className="h-[200px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <ChartTooltip
-            cursor={false}
-            content={<ChartTooltipContent hideLabel />}
-          />
-          <Pie
-            data={chartData}
-            dataKey="value"
-            nameKey="name"
-            innerRadius={70}
-            outerRadius={90}
-            paddingAngle={5}
-            stroke="none"
-          >
-            {chartData.map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={entry.fill}
-                className="hover:opacity-80 transition-opacity"
-              />
-            ))}
-            <Label
-              content={({ viewBox }) => {
-                if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                  return (
-                    <text
-                      x={viewBox.cx}
-                      y={viewBox.cy}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                    >
-                      <tspan
+      <h1 className="text-center text-sm text-muted-foreground mb-2">
+        Account Age: {Math.floor(stats.accountAgeInYears)} years
+      </h1>
+      <ChartContainer config={chartConfig} className="h-[200px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel />}
+            />
+            <Pie
+              data={chartData}
+              dataKey="value"
+              nameKey="name"
+              innerRadius={70}
+              outerRadius={90}
+              paddingAngle={5}
+              stroke="none"
+            >
+              {chartData.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={entry.fill}
+                  className="hover:opacity-80 transition-opacity"
+                />
+              ))}
+              <Label
+                content={({ viewBox }) => {
+                  if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                    return (
+                      <text
                         x={viewBox.cx}
                         y={viewBox.cy}
-                        className="fill-foreground text-3xl font-bold font-sans"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
                       >
-                        {data.displayScore}
-                      </tspan>
-                      <tspan
-                        x={viewBox.cx}
-                        y={(viewBox.cy || 0) + 24}
-                        className="fill-muted-foreground text-sm tracking-tight font-medium"
-                      >
-                        IMPACT SCORE
-                      </tspan>
-                    </text>
-                  );
-                }
-              }}
-            />
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
-    </ChartContainer>
+                        <tspan
+                          x={viewBox.cx}
+                          y={viewBox.cy}
+                          className="fill-foreground text-3xl font-bold font-sans"
+                        >
+                          {data.displayScore}
+                        </tspan>
+                        <tspan
+                          x={viewBox.cx}
+                          y={(viewBox.cy || 0) + 24}
+                          className="fill-muted-foreground text-sm tracking-tight font-medium"
+                        >
+                          IMPACT SCORE
+                        </tspan>
+                      </text>
+                    );
+                  }
+                }}
+              />
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+      </ChartContainer>
     </>
   );
 }
 
 export function ScoreDetailsDialog({ stats }: ImpactScoreDisplayProps) {
   const data = calculateImpactScore(stats);
-  const [open, setOpen] = useState(false);
+  const [_open, _setOpen] = useState(false);
   return (
     <Dialog>
       <DialogTrigger asChild>

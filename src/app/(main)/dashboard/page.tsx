@@ -1,61 +1,38 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { SignOutButton } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
 import { useQuery as useConvexQuery } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
+import { LucideGitCommit } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  getContributionStats,
-  getDahboardStats,
-  getMonthlyActivity,
-} from "../../../modules/dashboard";
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import { Separator } from "@/components/ui/separator";
+import { useSidebar } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import ContributionGraph from "@/modules/dashboard/ContriButionGraph";
 import {
   PieChartVariant1,
   ScoreDetailsDialog,
 } from "@/modules/dashboard/PieDisplay1";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { LucideGitBranch, LucideGitCommit, Stars } from "lucide-react";
-import { useState } from "react";
-import ContributionGraph from "@/modules/dashboard/ContriButionGraph";
-import { useSidebar } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
-import Image from "next/image";
-import { Skeleton } from "@/components/ui/skeleton";
+import { api } from "../../../../convex/_generated/api";
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-  Area,
-  AreaChart,
-} from "recharts";
-
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+  getDahboardStats,
+  getMonthlyActivity,
+} from "../../../modules/dashboard";
 
 const DashboardPage = () => {
   const user = useConvexQuery(api.users.getCurrentUser);
-  const { open: sidebarOpen, isMobile } = useSidebar();
+  const { open: sidebarOpen } = useSidebar();
 
-  const {
-    data: dashboardStats,
-    isLoading,
-    error,
-    // refetch,
-  } = useQuery({
+  const { data: dashboardStats, isLoading } = useQuery({
     queryKey: ["dashboardStats", user?.githubAccessToken, user?.githubUsername],
     queryFn: () => getDahboardStats(user?.githubUsername || ""),
     staleTime: 30 * 60 * 1000, // 10 min || 30 min
@@ -74,7 +51,7 @@ const DashboardPage = () => {
     enabled: !!user?.githubUsername,
   });
 
-  const [range, setRange] = useState<"past" | "current">("past");
+  const [_range, _setRange] = useState<"past" | "current">("past");
   type ViewMode = "normal" | "stacked" | "expand";
   const [viewMode, setViewMode] = useState<ViewMode>("stacked");
 
@@ -212,7 +189,7 @@ const DashboardPage = () => {
                 "grid transition-all duration-150 ",
                 sidebarOpen
                   ? "grid-cols-[minmax(0,1fr)_320px] gap-5 2xl:gap-10"
-                  : "grid-cols-[minmax(0,1fr)_360px] gap-10 2xl:gap-14"
+                  : "grid-cols-[minmax(0,1fr)_360px] gap-10 2xl:gap-14",
               )}
             >
               {/* LEFT */}
@@ -249,7 +226,7 @@ const DashboardPage = () => {
                 "grid transition-all duration-150 ",
                 sidebarOpen
                   ? "grid-cols-[minmax(0,1fr)_320px] gap-5 2xl:gap-10"
-                  : "grid-cols-[minmax(0,1fr)_360px] gap-10 2xl:gap-14"
+                  : "grid-cols-[minmax(0,1fr)_360px] gap-10 2xl:gap-14",
               )}
             >
               {/* LEFT SIDE 6 MONTHS ACTIVITY */}
@@ -499,7 +476,3 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
-
-{/* <SignOutButton>
-  <Button variant="outline">Sign Out</Button>
-</SignOutButton> */}

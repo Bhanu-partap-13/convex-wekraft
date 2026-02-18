@@ -1,23 +1,19 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { UserButton } from "@clerk/nextjs";
+import { Authenticated, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { api } from "../../../../convex/_generated/api";
-import { useStoreUser } from "@/hooks/use-user-store";
-import { Loader2 } from "lucide-react";
-import { RedirectToSignIn, UserButton } from "@clerk/nextjs";
-import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
+import { CommunitySearchBar } from "@/components/SearchBar";
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
+import { useStoreUser } from "@/hooks/use-user-store";
+import { api } from "../../../../convex/_generated/api";
 import { DashboardBreadcrumbs } from "../../../modules/dashboard/SidebarBreadcrun";
-import { AppSidebar } from "../../../modules/dashboard/appSidebar";
-import { CommunitySearchBar } from "@/components/SearchBar";
-import HeaderProfile from "@/components/HeaderProfile";
 
 export default function Layout({
   children,
@@ -70,7 +66,7 @@ export default function Layout({
         {/* {user && !user.hasCompletedOnboarding ? null : children} */}
         <SidebarProvider defaultOpen={true}>
           {/* <AppSidebar /> */}
-             {sidebar}
+          {sidebar}
           <SidebarInset>
             <header className="flex justify-between h-19 py-1 shrink-0 items-center border-b px-4">
               <div className="flex items-center gap-2">
@@ -82,8 +78,8 @@ export default function Layout({
                 <CommunitySearchBar />
               </div>
               <div className="">
-              {/* <HeaderProfile /> */}
-              <UserButton/>
+                {/* <HeaderProfile /> */}
+                <UserButton />
               </div>
             </header>
             <main className="flex-1 overflow-auto">{children}</main>

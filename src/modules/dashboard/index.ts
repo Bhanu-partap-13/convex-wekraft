@@ -1,8 +1,8 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { fetchUserContributions, getGithubAccessToken } from "../github/action";
 import { Octokit } from "octokit";
+import { fetchUserContributions, getGithubAccessToken } from "../github/action";
 
 // =====================================
 // GETTING DASHBOARD STATS (count of all)
@@ -66,9 +66,9 @@ export async function getDahboardStats(githubName: string) {
     return {
       totalCommits,
       totalPRs: totalpr,
-      totalMergedPRs, 
+      totalMergedPRs,
       totalIssuesClosed,
-      totalOpenIssues, 
+      totalOpenIssues,
       totalReviews,
       accountAgeInYears,
       accountCreatedAt: user.created_at,
@@ -104,7 +104,7 @@ export async function getContributionStats(githubName: string) {
         date: day.date,
         count: day.contributionCount,
         level: Math.min(4, Math.floor(day.contributionCount / 3)),
-      }))
+      })),
     );
     // console.log("contributions", contributions);
     return {
@@ -140,7 +140,10 @@ export async function getMonthlyActivity() {
     const { data: user } = await octokit.rest.users.getAuthenticated();
 
     console.log("Fetching 6 motnhs activity for dashboard...");
-    const calendar = await fetchUserContributions(accessToken!, user.login);
+    const calendar = await fetchUserContributions(
+      accessToken ?? "",
+      user.login,
+    );
 
     if (!calendar) {
       return [];

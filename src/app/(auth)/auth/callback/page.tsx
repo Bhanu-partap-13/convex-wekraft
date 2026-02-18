@@ -1,17 +1,17 @@
 "use client";
 
-import { useQuery, useMutation } from "convex/react";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { api } from "../../../../../convex/_generated/api";
-import { useStoreUser } from "@/hooks/use-user-store";
+import { useMutation, useQuery } from "convex/react";
 import { Loader2 } from "lucide-react";
-import { getGithubAccessToken } from "@/modules/github/action";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { toast } from "sonner";
+import { useStoreUser } from "@/hooks/use-user-store";
+import { getGithubAccessToken } from "@/modules/github/action";
+import { api } from "../../../../../convex/_generated/api";
 
 // Here's a summary of the approach:
 
-// Sync User: It uses your 
+// Sync User: It uses your
 // useStoreUser
 //  hook to ensure the user is authenticated and synced to your Convex database.
 // Fetch User: It uses useQuery(api.users.getCurrentUser) to get the full user profile including hasCompletedOnboarding.
@@ -19,7 +19,7 @@ import { toast } from "sonner";
 // If hasCompletedOnboarding is true -> Redirects to /dashboard.
 // Otherwise -> Redirects to /onboard/[userid].
 // If not authenticated -> Redirects to /.
-// The code relies on 
+// The code relies on
 // useStoreUser
 //  to handle the initial syncing logic (creating the user if they don't exist).
 const AuthCallback = () => {
@@ -51,7 +51,7 @@ const AuthCallback = () => {
         if (token) {
           await setGithubToken({ token });
           console.log("✅ GitHub Access Token stored securely.");
-          toast.info("Access To Github Granted Successfully.")
+          toast.info("Access To Github Granted Successfully.");
         } else {
           console.warn("⚠️ No GitHub Access Token found.");
           toast.error("No GitHub Access Token found.");
@@ -63,16 +63,16 @@ const AuthCallback = () => {
     };
 
     // Run this async without blocking (or await it if critical)
-    // We'll let it run and then redirect. 
-    // Ideally we might want to await it, but for speed we fire-and-forget 
+    // We'll let it run and then redirect.
+    // Ideally we might want to await it, but for speed we fire-and-forget
     // or wait for it if onboarding depends on it.
     // Given the request "identify when to call it before onbaording starts",
     // we should wait for it.
-    
-    const handleRedirect = async () => {
-      await syncGithubToken(); 
 
-      if (user && user.hasCompletedOnboarding) {
+    const handleRedirect = async () => {
+      await syncGithubToken();
+
+      if (user?.hasCompletedOnboarding) {
         router.push("/dashboard");
       } else if (user) {
         router.push(`/onboard/${user._id}`);
@@ -80,7 +80,6 @@ const AuthCallback = () => {
     };
 
     handleRedirect();
-
   }, [isAuthenticated, isStoreLoading, user, router, setGithubToken]);
 
   return (

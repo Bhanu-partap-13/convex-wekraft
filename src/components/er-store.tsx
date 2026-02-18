@@ -562,7 +562,6 @@
 //               <ConversationScrollButton />
 //             </Conversation>
 //             <div className="p-3 border-t border-border">
-             
 
 //               {/* Status Messages */}
 //               {uploadError && (

@@ -1,6 +1,6 @@
 // src/lib/types.ts
 
-import { Node, Edge } from '@xyflow/react';
+import type { Edge, Node } from "@xyflow/react";
 
 // ============================================
 // ER MODEL TYPES
@@ -32,7 +32,7 @@ export interface Field {
 export interface Relation {
   from: string;
   to: string;
-  type: '1-1' | '1-M' | 'M-1' | 'M-M';
+  type: "1-1" | "1-M" | "M-1" | "M-M";
   fromField?: string;
   toField?: string;
 }
@@ -50,7 +50,7 @@ export interface EntityNodeData {
   [key: string]: any;
 }
 
-export type EntityNode = Node<EntityNodeData, 'entity'>;
+export type EntityNode = Node<EntityNodeData, "entity">;
 export type EntityEdge = Edge;
 
 // ============================================
@@ -97,7 +97,7 @@ export interface ChatRequest {
 
 export interface Message {
   id: string;
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   content: string;
 }
 
@@ -110,18 +110,18 @@ export interface ExportRequest {
 // SCHEMA DETECTION TYPES
 // ============================================
 
-export type SchemaFormat = 
-  | 'sql'
-  | 'prisma'
-  | 'typescript'
-  | 'convex'
-  | 'mongoose'
-  | 'graphql'
-  | 'unknown';
+export type SchemaFormat =
+  | "sql"
+  | "prisma"
+  | "typescript"
+  | "convex"
+  | "mongoose"
+  | "graphql"
+  | "unknown";
 
 export interface DetectionResult {
   format: SchemaFormat;
-  confidence: 'high' | 'medium' | 'low';
+  confidence: "high" | "medium" | "low";
   prompt: string;
 }
 

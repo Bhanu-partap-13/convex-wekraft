@@ -1,5 +1,4 @@
 import { MultiStepOnboarding } from "@/modules/authFlow/multi-step";
-import React from "react";
 
 const Onboard = () => {
   return (

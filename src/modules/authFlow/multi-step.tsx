@@ -1,29 +1,25 @@
 "use client";
 
-import * as React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  ChevronRight,
-  ChevronLeft,
-  Check,
-  Search,
-  Plus,
-  X,
-  Github,
-  Send,
-  User,
-  Globe,
-  Phone,
   Briefcase,
-  Layers,
-  Users,
-  GitBranchPlus,
-  LucideUser,
-  Lock,
-  Unlock,
-  Loader2,
+  Check,
+  ChevronLeft,
+  ChevronRight,
   Copy,
+  GitBranchPlus,
+  Github,
+  Globe,
+  Layers,
+  Loader2,
+  Lock,
+  LucideUser,
+  Phone,
+  Search,
+  User,
+  Users,
 } from "lucide-react";
+import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,19 +35,19 @@ const STEPS = [
 const TAG_OPTIONS = ["AI", "Web3", "ML", "SaaS", "DevTools", "Open Source"];
 
 import { useMutation, useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import Image from "next/image";
-import { RepositoryList } from "./use-repo";
 import {
   generateInviteCode,
   getInviteLink,
-  shareViaWhatsApp,
-  shareViaGmail,
   shareViaDiscord,
+  shareViaGmail,
+  shareViaWhatsApp,
 } from "@/lib/invite";
-import { Doc } from "../../../convex/_generated/dataModel";
+import { api } from "../../../convex/_generated/api";
+import type { Doc } from "../../../convex/_generated/dataModel";
+import { RepositoryList } from "./use-repo";
 
 export function MultiStepOnboarding() {
   const user: Doc<"users"> | undefined | null = useQuery(
@@ -104,7 +100,7 @@ export function MultiStepOnboarding() {
     toast.success("Link copied to clipboard");
   };
 
-  const [localConnectingId, setLocalConnectingId] = React.useState<
+  const [_localConnectingId, _setLocalConnectingId] = React.useState<
     number | null
   >(null);
 
@@ -142,8 +138,8 @@ export function MultiStepOnboarding() {
           repoOwner: storedRepo.owner,
           repoUrl: storedRepo.url,
           inviteLink: inviteLink,
-          ownerName: user?.name!,
-          ownerImage: user?.imageUrl!,
+          ownerName: user?.name ?? "",
+          ownerImage: user?.imageUrl ?? "",
         });
 
         setDirection(1);
@@ -354,7 +350,7 @@ export function MultiStepOnboarding() {
 
                   <RepositoryList
                     searchQuery={searchQuery}
-                    selectedRepo={selectedRepo!}
+                    selectedRepo={selectedRepo ?? null}
                     setSelectedRepo={setSelectedRepo}
                   />
                 </div>
@@ -398,6 +394,7 @@ export function MultiStepOnboarding() {
                       <div className="flex flex-wrap gap-2">
                         {TAG_OPTIONS.map((tag) => (
                           <button
+                            type="button"
                             key={tag}
                             onClick={() => toggleTag(tag)}
                             className={cn(
@@ -424,7 +421,13 @@ export function MultiStepOnboarding() {
                       </Label>
                       <div className="grid grid-cols-2 gap-3">
                         <div
+                          role="button"
+                          tabIndex={0}
                           onClick={() => setIsPublic(true)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ")
+                              setIsPublic(true);
+                          }}
                           className={cn(
                             "cursor-pointer p-2 rounded-xl border flex items-center gap-3 transition-all",
                             isPublic
@@ -449,7 +452,13 @@ export function MultiStepOnboarding() {
                         </div>
 
                         <div
+                          role="button"
+                          tabIndex={0}
                           onClick={() => setIsPublic(false)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ")
+                              setIsPublic(false);
+                          }}
                           className={cn(
                             "cursor-pointer p-2 rounded-xl border flex items-center gap-3 transition-all",
                             !isPublic

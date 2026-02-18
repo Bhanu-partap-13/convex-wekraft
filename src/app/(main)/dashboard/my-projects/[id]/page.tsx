@@ -1,74 +1,58 @@
 "use client";
 
+import { useMutation, useQuery } from "convex/react";
+import {
+  ChevronLeft,
+  Code,
+  Copy,
+  GitForkIcon,
+  Github,
+  Globe,
+  ImageIcon,
+  Loader2,
+  Lock,
+  LucideActivity,
+  LucideBrain,
+  LucideExternalLink,
+  LucideInfo,
+  LucidePen,
+  LucideUser2,
+  LucideUserPlus,
+  StarIcon,
+  UploadCloud,
+  UserPlus,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { useParams } from "next/navigation";
-import React, { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../../../../convex/_generated/api";
-import { Id } from "../../../../../../convex/_generated/dataModel";
-import { Skeleton } from "@/components/ui/skeleton";
+import type React from "react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  ArrowLeft,
-  Github,
-  Globe,
-  Lock,
-  Calendar,
-  ExternalLink,
-  StarIcon,
-  Code,
-  LucidePen,
-  LucideBrain,
-  LucideChevronsLeftRightEllipsis,
-  UploadCloud,
-  Loader2,
-  ImageIcon,
-  LucideFileText,
-  LucideNotebook,
-  LucideSlack,
-  LucideExternalLink,
-  GitForkIcon,
-  LucideActivity,
-  LucideInfo,
-  ChevronLeft,
-  UserPlus,
-  LucideUser2,
-  Copy,
-  LucideUserPlus,
-} from "lucide-react";
-import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import StatsTab from "@/modules/my-project/Stats";
-import Image from "next/image";
-import SettingTab from "@/modules/my-project/settingsTab";
-import AboutTab from "@/modules/my-project/Abouttab";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTrigger,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { toast } from "sonner";
+import { shareViaDiscord, shareViaGmail, shareViaWhatsApp } from "@/lib/invite";
+import AboutTab from "@/modules/my-project/Abouttab";
 import RequestTab from "@/modules/my-project/ReqTab";
-import { shareViaWhatsApp, shareViaGmail, shareViaDiscord } from "@/lib/invite";
+import StatsTab from "@/modules/my-project/Stats";
+import SettingTab from "@/modules/my-project/settingsTab";
+import { api } from "../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../convex/_generated/dataModel";
 
 const MyProjectId = () => {
   const params = useParams();
@@ -113,7 +97,7 @@ const MyProjectId = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Upload failed with status: " + response.status);
+        throw new Error(`Upload failed with status: ${response.status}`);
       }
 
       const data = await response.json();
@@ -287,7 +271,7 @@ const MyProjectId = () => {
                             className="cursor-pointer"
                             onClick={() =>
                               shareViaWhatsApp(
-                                inviteLink!,
+                                inviteLink ?? "",
                                 project?.projectName ||
                                   project?.repoName ||
                                   "New Project",
@@ -308,7 +292,7 @@ const MyProjectId = () => {
                             className="cursor-pointer"
                             onClick={() =>
                               shareViaGmail(
-                                inviteLink!,
+                                inviteLink ?? "",
                                 project?.projectName ||
                                   project?.repoName ||
                                   "New Project",
@@ -328,7 +312,7 @@ const MyProjectId = () => {
                             variant="outline"
                             className="cursor-pointer"
                             onClick={() => {
-                              shareViaDiscord(inviteLink!);
+                              shareViaDiscord(inviteLink ?? "");
                               toast.success("Link copied and opening Discord");
                             }}
                           >

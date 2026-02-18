@@ -1,45 +1,32 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { useQuery } from "convex/react";
-import { api } from "../../../../../convex/_generated/api";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  Loader2,
-  Rocket,
-  Star,
-  Users,
-  ExternalLink,
-  HeartPulse,
-  StarIcon,
   Code,
   GitForkIcon,
+  HeartPulse,
   LucideExternalLink,
+  Rocket,
+  StarIcon,
+  Users,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardFooter,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-
-import { CommunityFilters } from "@/components/CommunityFilters";
-import { useSidebar } from "@/components/ui/sidebar";
-import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { CommunityFilters } from "@/components/CommunityFilters";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardFooter, CardHeader } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { useSidebar } from "@/components/ui/sidebar";
+import { api } from "../../../../../convex/_generated/api";
 
 const CommunityPage = () => {
   const searchParams = useSearchParams();
   const query = searchParams.get("query");
   const mode = searchParams.get("mode");
-  const { open: sidebarOpen, isMobile } = useSidebar();
+  const { open: sidebarOpen } = useSidebar();
 
   const [aiLoading, setAiLoading] = useState(false);
   const [searchFilters, setSearchFilters] = useState<{
@@ -194,9 +181,10 @@ const CommunityPage = () => {
                         <div className="flex flex-col w-full">
                           <div className="flex w-full items-center justify-between">
                             <Link href={`/dashboard/projects/${project._id}`}>
-                            <p className="text-xl font-semibold capitalize tracking-tight truncate cursor-pointer">
-                            <LucideExternalLink className="w-5 h-5 inline mr-2 -mt-1" />  {project.projectName}
-                            </p>
+                              <p className="text-xl font-semibold capitalize tracking-tight truncate cursor-pointer">
+                                <LucideExternalLink className="w-5 h-5 inline mr-2 -mt-1" />{" "}
+                                {project.projectName}
+                              </p>
                             </Link>
 
                             <div className="flex gap-4">

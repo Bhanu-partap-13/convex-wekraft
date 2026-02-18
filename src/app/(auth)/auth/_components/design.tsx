@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
@@ -87,7 +86,11 @@ const ActivitySlide = () => (
             key={i}
             className="size-5 rounded-full border border-neutral-700 overflow-hidden"
           >
-            <img src={src} className="w-full h-full object-cover" />
+            <img
+              src={src}
+              alt="contributor"
+              className="w-full h-full object-cover"
+            />
           </div>
         ))}
       </div>

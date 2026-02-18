@@ -1,11 +1,11 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import React, { useState } from "react";
 import { useParams } from "next/navigation";
-import { Id } from "../../../../../../../convex/_generated/dataModel";
+import { useState } from "react";
 import { Orb } from "@/components/elevenLabs/Orb";
+import { Button } from "@/components/ui/button";
+import type { Id } from "../../../../../../../convex/_generated/dataModel";
 import DialogOrb from "./_components/DialogOrb";
 
 const ProjectWorkspace = () => {
@@ -52,7 +52,11 @@ const ProjectWorkspace = () => {
         </div>
       </Button>
 
-      <DialogOrb isOrbOpen={isOrbOpen} setIsOrbOpen={setIsOrbOpen} repoId={repoId} />
+      <DialogOrb
+        isOrbOpen={isOrbOpen}
+        setIsOrbOpen={setIsOrbOpen}
+        repoId={repoId}
+      />
     </div>
   );
 };

@@ -1,15 +1,42 @@
 "use client";
 
-import React, { useState } from "react";
 import { useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { Id } from "../../../convex/_generated/dataModel";
+import {
+  Loader2,
+  LucideActivity,
+  LucideBrain,
+  LucideBriefcase,
+  LucideExternalLink,
+  LucideInfo,
+  LucideSettings,
+  LucideSettings2,
+  Plus,
+  Save,
+  Search,
+  Tag,
+  Trash2,
+  Users,
+  X,
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { AVAILABLE_TAGS, roles } from "@/components/Universal-static-storage";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +46,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -26,42 +56,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  X,
-  Plus,
-  Save,
-  Loader2,
-  Search,
-  Trash2,
-  Users,
-  LucideSettings2,
-  LucideSettings,
-  Tag,
-  LucideType,
-  LucideActivity,
-  LucideBriefcase,
-  LucideBrain,
-  LucideInfo,
-  LucideExternalLink,
-} from "lucide-react";
-import { toast } from "sonner";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { AVAILABLE_TAGS, roles } from "@/components/Universal-static-storage";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 
 interface LookingForMember {
   role: string;
@@ -77,13 +76,19 @@ interface ProjectData {
   lookingForMembers?: LookingForMember[];
 }
 
-const SettingTab = ({ project, isPro }: { project: ProjectData; isPro: boolean }) => {
+const SettingTab = ({
+  project,
+  isPro,
+}: {
+  project: ProjectData;
+  isPro: boolean;
+}) => {
   const updateProject = useMutation(api.projects.updateProject);
 
   // Local state for form fields
   const [description, setDescription] = useState(project.description);
   const [selectedTags, setSelectedTags] = useState<string[]>(
-    project.tags || []
+    project.tags || [],
   );
   const [isPublic, setIsPublic] = useState(project.isPublic);
   const [lookingForMembers, setLookingForMembers] = useState<
@@ -154,7 +159,7 @@ const SettingTab = ({ project, isPro }: { project: ProjectData; isPro: boolean }
   };
 
   const filteredTags = AVAILABLE_TAGS.filter((tag) =>
-    tag.toLowerCase().includes(tagSearch.toLowerCase())
+    tag.toLowerCase().includes(tagSearch.toLowerCase()),
   );
 
   return (
@@ -298,12 +303,15 @@ const SettingTab = ({ project, isPro }: { project: ProjectData; isPro: boolean }
         <div className="bg-accent/40 p-2 rounded-md w-full">
           <p className="text-sm  text-muted-foreground">
             <LucideInfo className="inline w-4 h-4 mr-2" /> Make Sure to have
-            Right Tags, description, About & Good project health , so that 
-            your project can be found by more people.
+            Right Tags, description, About & Good project health , so that your
+            project can be found by more people.
           </p>
 
           {isPro ? (
-            <Button size="sm" className="text-xs cursor-pointer mt-2 w-fit mx-auto flex items-center justify-center">
+            <Button
+              size="sm"
+              className="text-xs cursor-pointer mt-2 w-fit mx-auto flex items-center justify-center"
+            >
               <LucideBrain className="w-4 h-4" /> Analyze Project
             </Button>
           ) : (
@@ -382,7 +390,7 @@ const SettingTab = ({ project, isPro }: { project: ProjectData; isPro: boolean }
                                 .filter((role) =>
                                   role
                                     .toLowerCase()
-                                    .includes(roleQuery.toLowerCase())
+                                    .includes(roleQuery.toLowerCase()),
                                 )
                                 .slice(0, 6)
                                 .map((role) => (

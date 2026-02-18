@@ -1,15 +1,13 @@
+import { inngest } from "@/inngest/client";
 import {
-  getGithubAccessToken,
   getRepoFileContents,
   getUserGithubToken,
 } from "@/modules/github/action";
 import { indexCodebase } from "@/modules/Pinecone/rag";
-import { inngest } from "@/inngest/client";
 
 export const indexRepo = inngest.createFunction(
   { id: "index-repo" },
   { event: "repository-connected" },
-
 
   async ({ event, step }) => {
     const { owner, repo, userId } = event.data;
@@ -27,5 +25,5 @@ export const indexRepo = inngest.createFunction(
     });
 
     return { success: true, indexedFiles: files.length };
-  }
+  },
 );

@@ -1,5 +1,5 @@
-import ProjectSidebar from "@/modules/my-project/projectSidebar"
+import ProjectSidebar from "@/modules/my-project/projectSidebar";
 
 export default function WorkspaceSidebar() {
-  return <ProjectSidebar/>
+  return <ProjectSidebar />;
 }

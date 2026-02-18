@@ -1,24 +1,10 @@
-import {
-  Github,
-  ShieldCheck,
-  Zap,
-  Globe,
-  LucideGithub,
-  LucidePhone,
-  ChevronLeft,
-} from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
+import { SignInButton } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { Github, LucideGithub } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import Design from "./_components/design";
 // import { toast } from "sonner";
 

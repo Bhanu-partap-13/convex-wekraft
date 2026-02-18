@@ -1,47 +1,56 @@
 "use client";
 
-import React, { useState } from "react";
-import { AVAILABLE_TAGS, roles as AVAILABLE_ROLES } from "@/components/Universal-static-storage";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Check, Search, SlidersHorizontal, X } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import {
+  roles as AVAILABLE_ROLES,
+  AVAILABLE_TAGS,
+} from "@/components/Universal-static-storage";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Search, X, Check, SlidersHorizontal } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 interface CommunityFiltersProps {
   searchFilters: {
     tags?: string[];
     roles?: string[];
   };
-  setSearchFilters: React.Dispatch<React.SetStateAction<{
-    tags?: string[];
-    roles?: string[];
-  }>>;
+  setSearchFilters: React.Dispatch<
+    React.SetStateAction<{
+      tags?: string[];
+      roles?: string[];
+    }>
+  >;
 }
 
-export function CommunityFilters({ searchFilters, setSearchFilters }: CommunityFiltersProps) {
+export function CommunityFilters({
+  searchFilters,
+  setSearchFilters,
+}: CommunityFiltersProps) {
   const [filterSearch, setFilterSearch] = useState("");
 
   const activeTags = searchFilters.tags || [];
   const activeRoles = searchFilters.roles || [];
 
   const toggleTag = (tag: string) => {
-    setSearchFilters(prev => ({
+    setSearchFilters((prev) => ({
       ...prev,
       tags: activeTags.includes(tag)
-        ? activeTags.filter(t => t !== tag)
-        : [...activeTags, tag]
+        ? activeTags.filter((t) => t !== tag)
+        : [...activeTags, tag],
     }));
   };
 
   const toggleRole = (role: string) => {
-    setSearchFilters(prev => ({
+    setSearchFilters((prev) => ({
       ...prev,
       roles: activeRoles.includes(role)
-        ? activeRoles.filter(r => r !== role)
-        : [...activeRoles, role]
+        ? activeRoles.filter((r) => r !== role)
+        : [...activeRoles, role],
     }));
   };
 
@@ -49,23 +58,23 @@ export function CommunityFilters({ searchFilters, setSearchFilters }: CommunityF
     setSearchFilters({ tags: [], roles: [] });
   };
 
-  const filteredTags = AVAILABLE_TAGS.filter(t =>
-    t.toLowerCase().includes(filterSearch.toLowerCase())
+  const filteredTags = AVAILABLE_TAGS.filter((t) =>
+    t.toLowerCase().includes(filterSearch.toLowerCase()),
   );
-  const filteredRoles = AVAILABLE_ROLES.filter(r =>
-    r.toLowerCase().includes(filterSearch.toLowerCase())
+  const filteredRoles = AVAILABLE_ROLES.filter((r) =>
+    r.toLowerCase().includes(filterSearch.toLowerCase()),
   );
 
   return (
     <div className="space-y-6 pr-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-base font-bold flex items-center gap-2">
-          Filters <SlidersHorizontal className="inline size-4 ml-2 "/>
+          Filters <SlidersHorizontal className="inline size-4 ml-2 " />
         </h3>
         {(activeTags.length > 0 || activeRoles.length > 0) && (
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={clearFilters}
             className="h-7 px-2 text-[10px] text-muted-foreground hover:text-primary"
           >
@@ -91,7 +100,9 @@ export function CommunityFilters({ searchFilters, setSearchFilters }: CommunityF
             <span className="text-[14px] font-semibold text-muted-foreground">
               Popular Tags
             </span>
-            <span className="text-[12px] text-muted-foreground">{activeTags.length} selected</span>
+            <span className="text-[12px] text-muted-foreground">
+              {activeTags.length} selected
+            </span>
           </div>
           <ScrollArea className="h-44 pr-3">
             <div className="flex flex-wrap gap-2.5 pt-1">
@@ -104,9 +115,9 @@ export function CommunityFilters({ searchFilters, setSearchFilters }: CommunityF
                     variant={isSelected ? "default" : "outline"}
                     className={cn(
                       "cursor-pointer text-[11px] py-0.5 px-2 transition-all border-muted-foreground/30",
-                      isSelected 
-                        ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20" 
-                        : "dark:bg-muted/20 bg-accent/40 hover:bg-muted hover:border-primary/30 italic opacity-80"
+                      isSelected
+                        ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                        : "dark:bg-muted/20 bg-accent/40 hover:bg-muted hover:border-primary/30 italic opacity-80",
                     )}
                   >
                     {tag}
@@ -125,7 +136,9 @@ export function CommunityFilters({ searchFilters, setSearchFilters }: CommunityF
             <span className="text-[14px] font-semibold text-muted-foreground">
               Wanted Roles
             </span>
-            <span className="text-[12px] text-muted-foreground">{activeRoles.length} selected</span>
+            <span className="text-[12px] text-muted-foreground">
+              {activeRoles.length} selected
+            </span>
           </div>
           <ScrollArea className="h-64 pr-3">
             <div className="space-y-1 pt-1">
@@ -137,9 +150,9 @@ export function CommunityFilters({ searchFilters, setSearchFilters }: CommunityF
                     onClick={() => toggleRole(role)}
                     className={cn(
                       "flex w-full items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-[11px] transition-all group",
-                      isSelected 
-                        ? "bg-primary/5 text-primary font-bold" 
-                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                      isSelected
+                        ? "bg-primary/5 text-primary font-bold"
+                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
                     )}
                   >
                     <span className="capitalize line-clamp-1">{role}</span>

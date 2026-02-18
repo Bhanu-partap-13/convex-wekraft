@@ -1,96 +1,61 @@
 "use client";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
-import Link from "next/link";
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "../../components/ui/dropdown-menu";
-import { useEffect, useState } from "react";
-import { useTheme } from "next-themes";
-import { usePathname } from "next/navigation";
-
+import { useQuery } from "convex/react";
 import {
   Bell,
   Bot,
-  ChevronDown,
   ChevronRight,
-  ChevronsLeftRight,
-  ChevronsRight,
   ChevronsUpDown,
   Compass,
-  CreditCard,
   FileText,
-  Folder,
   FolderCode,
   Gift,
-  GitBranch,
   Github,
-  GithubIcon,
-  LayoutDashboard,
   Link2,
-  LogOutIcon,
-  LucideGitBranch,
-  LucideGithub,
-  LucideGrip,
   LucideLayoutDashboard,
-  LucideListTodo,
-  LucideRocket,
-  LucideWandSparkles,
   Mic,
-  Moon,
   Palette,
-  Play,
   Plus,
-  Settings2,
   SparklesIcon,
   Star,
-  Stars,
-  Store,
-  Sun,
   User,
   UserPlus,
   Users,
-  Wallet,
 } from "lucide-react";
-
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "../../components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "../../components/ui/button";
-import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { Doc, Id } from "../../../convex/_generated/dataModel";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { ThemeButtons } from "./ThemeButton";
 import { Separator } from "@/components/ui/separator";
-import Image from "next/image";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+} from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { api } from "../../../convex/_generated/api";
+import type { Doc } from "../../../convex/_generated/dataModel";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "../../components/ui/avatar";
+import { Button } from "../../components/ui/button";
+import { ThemeButtons } from "./ThemeButton";
 
 export const AppSidebar = () => {
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const { setTheme } = useTheme();
+  const [, setMounted] = useState(false);
   const pathname = usePathname();
 
   // Exact TS type of a user row (auto-generated from schema)
@@ -106,7 +71,7 @@ export const AppSidebar = () => {
   }, []);
 
   const isActive = (url: string) => {
-    return pathname === url || pathname.startsWith(url + "/dashbaord");
+    return pathname === url || pathname.startsWith(`${url}/dashbaord`);
   };
 
   return (
@@ -220,7 +185,6 @@ export const AppSidebar = () => {
             </Link>
           </SidebarMenuButton>
 
-        
           {/* Community with hover popover fields */}
           <Popover>
             <PopoverTrigger asChild>
@@ -232,9 +196,7 @@ export const AppSidebar = () => {
                   <Users className="h-5 w-5" />
                   <span className="text-base">Community</span>
                   <ChevronRight className="h-4 w-4 ml-auto" />
-                  <span
-                    className=""
-                  />
+                  <span className="" />
                 </div>
               </SidebarMenuButton>
             </PopoverTrigger>

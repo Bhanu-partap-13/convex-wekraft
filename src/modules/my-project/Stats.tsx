@@ -1,7 +1,23 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
-import React, { useState } from "react";
-import { getProjectHealthData, getProjectLanguages } from "../github/action";
+import { useMutation } from "convex/react";
+import {
+  Loader2,
+  LucideActivity,
+  LucideCalendar,
+  LucideGitBranch,
+  LucideGitBranchPlus,
+  LucideHeart,
+  LucideInfo,
+  LucideMerge,
+  ShieldCheck,
+  Timer,
+  Users,
+} from "lucide-react";
+import { useState } from "react";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,29 +26,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  LucideActivity,
-  LucideCalendar,
-  LucideGitBranch,
-  LucideGitBranchPlus,
-  LucideHeart,
-  LucideMerge,
-  ShieldCheck,
-  Zap,
-  Users,
-  Timer,
-  Loader2,
-  LucideInfo,
-} from "lucide-react";
-
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Doc } from "../../../convex/_generated/dataModel";
-import { useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { getProjectHealthScore } from "./index";
-import { toast } from "sonner";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -40,6 +33,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { api } from "../../../convex/_generated/api";
+import type { Doc } from "../../../convex/_generated/dataModel";
+import { getProjectHealthData, getProjectLanguages } from "../github/action";
+import { getProjectHealthScore } from "./index";
 
 const LANGUAGE_COLORS = [
   "var(--chart-1)",
@@ -289,8 +287,8 @@ const StatsTab = ({
                     fullProject.healthScore.totalScore >= 70
                       ? "bg-green-500/25"
                       : fullProject.healthScore.totalScore >= 40
-                      ? "bg-yellow-500/25"
-                      : "bg-red-500/25"
+                        ? "bg-yellow-500/25"
+                        : "bg-red-500/25"
                   }`}
                 >
                   <span className="text-4xl font-bold">
@@ -381,10 +379,12 @@ const StatsTab = ({
 
               <p className="text-xs tracking-tight text-muted-foreground">
                 <LucideInfo className="w-4 h-4 inline" /> Health Score is
-                calculated based on project Activity, proper doc and Maintenance, community trust/virality and momentum.
+                calculated based on project Activity, proper doc and
+                Maintenance, community trust/virality and momentum.
               </p>
-               <p className="text-xs tracking-tight text-muted-foreground">
-                <LucideInfo className="w-4 h-4 inline" /> Health score is updated on every 3 days.
+              <p className="text-xs tracking-tight text-muted-foreground">
+                <LucideInfo className="w-4 h-4 inline" /> Health score is
+                updated on every 3 days.
               </p>
             </div>
           ) : (

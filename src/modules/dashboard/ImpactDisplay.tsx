@@ -1,15 +1,15 @@
 // components/ImpactScoreDisplay.tsx
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
-  PieChart,
-  Pie,
   Cell,
-  ResponsiveContainer,
   Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
   Tooltip,
 } from "recharts";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { calculateImpactScore } from "./ImpactScore";
 
 interface ImpactScoreDisplayProps {
@@ -62,7 +62,7 @@ export function ImpactScoreDisplay({ stats }: ImpactScoreDisplayProps) {
         <CardContent className="text-center">
           <div
             className={`text-7xl font-bold ${getScoreColor(
-              impactScore.displayScore
+              impactScore.displayScore,
             )}`}
           >
             {impactScore.displayScore}
