@@ -1,7 +1,7 @@
 // src/lib/gemini.ts
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import type { DetectionResult, ERModel, SchemaFormat } from "@/types/ERmodel";
+import type { ERModel, SchemaFormat, DetectionResult } from "@/types/ERmodel"
 
 /**
  * Initialize Gemini client
@@ -376,7 +376,7 @@ Be smart and adaptive. Look for patterns that indicate database structure.
  */
 export async function parseSchemaWithGemini(
   schemaContent: string,
-  formatHint?: SchemaFormat,
+  formatHint?: SchemaFormat
 ): Promise<ERModel> {
   const genAI = initGemini();
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
@@ -397,7 +397,7 @@ Remember: Return ONLY valid JSON following the ERModel structure. No markdown, n
 
   try {
     console.log("Calling Gemini API for schema parsing...");
-
+    
     // Retry logic for network failures
     let lastError: any;
     for (let attempt = 1; attempt <= 3; attempt++) {
@@ -405,7 +405,7 @@ Remember: Return ONLY valid JSON following the ERModel structure. No markdown, n
         const result = await model.generateContent(prompt);
         const response = result.response;
         const text = response.text();
-
+        
         // Parse response
         const cleaned = text
           .replace(/```json\n?/g, "")
@@ -414,32 +414,28 @@ Remember: Return ONLY valid JSON following the ERModel structure. No markdown, n
 
         try {
           const parsed = JSON.parse(cleaned) as ERModel;
-          console.log(
-            `Schema parsed successfully: ${parsed.entities.length} entities`,
-          );
+          console.log(`Schema parsed successfully: ${parsed.entities.length} entities`);
           // Add timestamp
           parsed.timestamp = new Date().toISOString();
           return parsed;
-        } catch (_jsonError) {
+        } catch (jsonError) {
           console.error("Failed to parse JSON response:", cleaned);
-          throw new Error(
-            `Invalid JSON response from Gemini: ${cleaned.substring(0, 100)}...`,
-          );
+          throw new Error(`Invalid JSON response from Gemini: ${cleaned.substring(0, 100)}...`);
         }
       } catch (err) {
         lastError = err;
         if (attempt < 3) {
           console.log(`Attempt ${attempt} failed, retrying in ${attempt}s...`);
-          await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+          await new Promise(resolve => setTimeout(resolve, attempt * 1000));
         }
       }
     }
-
+    
     throw lastError;
   } catch (error: unknown) {
     console.error("Gemini parsing error:", error);
     throw new Error(
-      `Failed to parse schema: ${error instanceof Error ? error.message : String(error) || "Unknown error"}`,
+      `Failed to parse schema: ${error instanceof Error ? error.message : String(error) || "Unknown error"}`
     );
   }
 }

@@ -1,8 +1,9 @@
 "use server";
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import type { Doc } from "../../../convex/_generated/dataModel";
+import { Doc } from "../../../convex/_generated/dataModel";
 import { getProjectHealthData, getProjectLanguages } from "../github/action";
+import { ChatOpenAI } from "@langchain/openai";
+import { z } from "zod";
 
 type ActivityInput = {
   commitsLast60Days: number | null;
@@ -11,6 +12,7 @@ type ActivityInput = {
   prMergeRate: number | null; // 0–1 or 0–100 (we’ll normalize)
   lastCommitDate: string | null; // ISO string
 };
+
 
 // ===========================================
 // Function to calculate activity momentum score (0-35)
@@ -60,15 +62,11 @@ export async function calculateActivityMomentumScore({
     const now = Date.now();
     const daysAgo = Math.floor((now - lastCommit) / (1000 * 60 * 60 * 24));
 
-    if (daysAgo <= 7)
-      score += 10; // very good
-    else if (daysAgo <= 14)
-      score += 8; // good
-    else if (daysAgo <= 30)
-      score += 5; // okay
-    else if (daysAgo <= 60)
-      score += 2; // decay
-    else score += 0; // inactive
+    if (daysAgo <= 7) score += 10;        // very good
+    else if (daysAgo <= 14) score += 8;   // good
+    else if (daysAgo <= 30) score += 5;   // okay
+    else if (daysAgo <= 60) score += 2;   // decay
+    else score += 0;                      // inactive
   }
 
   /* ---------------------------
@@ -96,8 +94,8 @@ export async function calculateCommunityTrustScore({
   const upvotes = projectUpvotes ?? 0;
 
   // Log scaling to avoid inflation
-  const starScore = Math.log10(stars + 1) * 4; // max ~6
-  const forkScore = Math.log10(forks + 1) * 3; // max ~4
+  const starScore = Math.log10(stars + 1) * 4;    // max ~6
+  const forkScore = Math.log10(forks + 1) * 3;    // max ~4
   const upvoteScore = Math.log10(upvotes + 1) * 7; // max ~10
 
   const rawScore = starScore + forkScore + upvoteScore;
@@ -129,15 +127,11 @@ export async function calculateFreshnessScore({
   let score = 0;
 
   // Recency (primary signal)
-  if (daysAgo <= 7)
-    score += 6; // very fresh
-  else if (daysAgo <= 14)
-    score += 5; // fresh
-  else if (daysAgo <= 30)
-    score += 3; // okay
-  else if (daysAgo <= 60)
-    score += 1; // stale
-  else score += 0; // inactive
+  if (daysAgo <= 7) score += 6;        // very fresh
+  else if (daysAgo <= 14) score += 5;  // fresh
+  else if (daysAgo <= 30) score += 3;  // okay
+  else if (daysAgo <= 60) score += 1;  // stale
+  else score += 0;                     // inactive
 
   // Velocity boost (secondary)
   if (commits >= 20) score += 4;
@@ -148,25 +142,19 @@ export async function calculateFreshnessScore({
 }
 
 // ==========================================
-// maintenanceQuality (0–35) SCORE AI
+// maintenanceQuality (0–35) SCORE AI 
 // ===========================================
 export async function calculateMaintenanceQualityScore(
   description: string,
   about: string,
   tags: string[],
-  languages: string[],
+  languages: string[]
 ): Promise<number> {
   try {
-    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-    if (!apiKey) {
-      console.warn(
-        "GOOGLE_GENERATIVE_AI_API_KEY not found, returning default score",
-      );
-      return 15; // Return a default middle score
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const chat = new ChatOpenAI({
+      modelName: "gpt-4o-mini",
+      temperature: 0.1,
+    });
 
     const prompt = `
       You are an expert software quality auditor. Evaluate the "Maintenance Quality" of a software project based on the following metadata.
@@ -184,20 +172,19 @@ export async function calculateMaintenanceQualityScore(
       Return ONLY a single integer number between 0 and 35 representing the score. Do not provide any explanation or text.
     `;
 
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const content = response.text().trim();
-
-    console.log("response score from AI", content);
-
+    const response = await chat.invoke(prompt);
+    console.log("response score from AI", response.content);
+    
+    // Ensure we parse a number
+    const content = response.content.toString().trim();
     const score = parseInt(content, 10);
     console.log("score from AI after parsing...", score);
 
-    if (Number.isNaN(score)) return 15; // Default middle score
+    if (isNaN(score)) return 0;
     return Math.max(0, Math.min(35, score));
   } catch (error) {
     console.error("Error calculating maintenance quality score:", error);
-    return 15; // Default to middle score on error
+    return 0; // Default to 0 on error
   }
 }
 
@@ -208,14 +195,8 @@ export const getProjectHealthScore = async (project: Doc<"projects">) => {
   console.log("Health Score Calculation Started for:", project.projectName);
 
   // 1. Fetch live activity data from GitHub
-  const healthData = await getProjectHealthData(
-    project.repoOwner,
-    project.repoName,
-  );
-  const languagesData = await getProjectLanguages(
-    project.repoOwner,
-    project.repoName,
-  );
+  const healthData = await getProjectHealthData(project.repoOwner, project.repoName);
+  const languagesData = await getProjectLanguages(project.repoOwner, project.repoName);
 
   // 2. Extract metrics (safe defaults)
   const velocity60Days = healthData?.commitsLast60Days ?? 0;
@@ -224,15 +205,13 @@ export const getProjectHealthScore = async (project: Doc<"projects">) => {
   const totalPr = healthData?.totalPRs ?? 0;
   const mergedPr = healthData?.mergedPRs ?? 0;
 
-  const projectAbout =
-    project.about || "no about (readme/docs) provided by user yet";
+  const projectAbout = project.about || "no about (readme/docs) provided by user yet";
   const projectTags = project.tags || [];
   const projectLanguages = languagesData?.map((lang) => lang.name) ?? [];
   const projectStars = project.projectStars ?? 0;
-  const projectForks = project.projectForks ?? 0;
+  const projectForks = project.projectForks ?? 0; 
   const projectUpvotes = project.projectUpvotes ?? 0;
-  const projectDescription =
-    project.description || "no description provided by user yet";
+  const projectDescription = project.description || "no description provided by user yet";
 
   console.log("Metrics extracted:", {
     velocity60Days,
@@ -268,19 +247,18 @@ export const getProjectHealthScore = async (project: Doc<"projects">) => {
     projectDescription,
     projectAbout,
     projectTags,
-    projectLanguages,
+    projectLanguages
   );
   console.log("Maintenance Quality (AI):", maintenanceQuality);
 
   // 4. Aggregate Total
-  const totalScore =
-    activityMomentum + communityTrust + freshness + maintenanceQuality;
+  const totalScore = activityMomentum + communityTrust + freshness + maintenanceQuality;
   const finalTotal = Math.max(0, Math.min(100, Math.round(totalScore)));
   console.log("Final Calculated Score:", finalTotal);
 
   // 5. Construct Health Object
   const previousScores = project.healthScore?.previousScores || [];
-
+  
   const newHistoryEntry = {
     totalScore: finalTotal,
     calculatedDate: new Date().toISOString().split("T")[0],
@@ -299,3 +277,4 @@ export const getProjectHealthScore = async (project: Doc<"projects">) => {
     previousScores: updatedHistory,
   };
 };
+

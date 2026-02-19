@@ -1,58 +1,67 @@
 "use client";
 
-import { useQuery } from "convex/react";
-import {
-  Activity,
-  AudioWaveform,
-  Bot,
-  Brain,
-  ChevronLeft,
-  ChevronRight,
-  ClipboardList,
-  Code2,
-  FileText,
-  Github,
-  Layers,
-  Link2,
-  Mic,
-  Network,
-  PenTool,
-  PlaneTakeoff,
-  SparklesIcon,
-} from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import {
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarFooter,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
+} from "@/components/ui/sidebar";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+
+import {
+  CheckSquare,
+  Clock,
+  Activity,
+  Settings,
+  ArrowLeft,
+  ChevronsUpDown,
+  Github,
+  ChevronLeft,
+  ChevronRight,
+  Store,
+  Layers,
+  PenTool,
+  ClipboardList,
+  AudioWaveform,
+  PlaneTakeoff,
+  SparklesIcon,
+  Brain,
+  Code2,
+  Network,
+  FileText,
+  Bot,
+  Link2,
+  Mic,
+  Code,
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { useParams, usePathname } from "next/navigation";
+import { useQuery } from "convex/react";
+import { Doc, Id } from "../../../convex/_generated/dataModel";
+import { api } from "../../../convex/_generated/api";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-} from "@/components/ui/sidebar";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { api } from "../../../convex/_generated/api";
-import type { Doc, Id } from "../../../convex/_generated/dataModel";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const workspaceMenu = [
   {
@@ -62,28 +71,38 @@ const workspaceMenu = [
   },
   {
     label: "Tasks",
-    path: "tasks",
+    path: "workspace/tasks",
     icon: ClipboardList,
   },
   {
     label: "Time Logs",
-    path: "time-logs",
+    path: "workspace/time-logs",
     icon: AudioWaveform,
   },
   {
     label: "Teamspace",
-    path: "teamspace",
+    path: "workspace/teamspace",
     icon: PlaneTakeoff,
   },
   {
     label: "Activity feed",
-    path: "activity",
+    path: "workspace/activity",
     icon: Activity,
   },
   {
     label: "Whiteboard",
-    path: "whiteboard",
+    path: "workspace/whiteboard",
     icon: PenTool,
+  },
+  {
+    label: "Repo Agent",
+    path: "workspace/repo-agent",
+    icon: Network,
+  },
+  {
+    label: "Codespace",
+    path: "workspace/codespace",
+    icon: Code,
   },
 ];
 
@@ -93,17 +112,17 @@ const aiMenu = {
   items: [
     {
       label: "UI/UX Studio",
-      path: "ai/ui-ux-studio",
+      path: "workspace/ui-ux-studio",
       icon: Code2,
     },
     {
       label: "Repo Agent",
-      path: "ai/repo-agent",
+      path: "workspace/repo-agent",
       icon: Network,
     },
     {
       label: "Doc Agent",
-      path: "ai/doc-agent",
+      path: "workspace/doc-agent",
       icon: FileText,
     },
   ],
@@ -111,7 +130,7 @@ const aiMenu = {
 
 export default function ProjectSidebar() {
   const { theme, setTheme } = useTheme();
-  const [_mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const params = useParams();
   const projectId = params.id as Id<"projects">;
@@ -129,7 +148,7 @@ export default function ProjectSidebar() {
   }, []);
 
   const isActive = (url: string) => {
-    return pathname === url || pathname.startsWith(`${url}/dashboard`);
+    return pathname === url || pathname.startsWith(url + "/dashboard");
   };
   return (
     <Sidebar collapsible="icon" className="">
@@ -274,7 +293,7 @@ export default function ProjectSidebar() {
         </SidebarMenu>
 
         {/* AI MENU  */}
-        <SidebarMenu className="px-1">
+        {/* <SidebarMenu className="px-1">
           <Collapsible asChild className="group/collapsible">
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
@@ -311,7 +330,7 @@ export default function ProjectSidebar() {
               </CollapsibleContent>
             </SidebarMenuItem>
           </Collapsible>
-        </SidebarMenu>
+        </SidebarMenu> */}
       </SidebarContent>
 
       {/* ───────── FOOTER ───────── */}

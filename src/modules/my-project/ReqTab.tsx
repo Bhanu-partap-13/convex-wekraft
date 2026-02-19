@@ -1,14 +1,14 @@
 "use client";
-import { useMutation, useQuery } from "convex/react";
-import { formatDistanceToNow } from "date-fns";
-import { Check, Ghost, Loader2, LucideUser2, X } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import React, { useState } from "react";
+import { Id } from "../../../convex/_generated/dataModel";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Check, X, Loader2, Ghost, LucideUser2 } from "lucide-react";
+import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
 import { useProjectRole } from "@/hooks/use-project-role";
-import { api } from "../../../convex/_generated/api";
-import type { Id } from "../../../convex/_generated/dataModel";
 
 const RequestTab = ({ projectId }: { projectId: Id<"projects"> }) => {
   const requests = useQuery(api.projects.getProjectRequests, { projectId });
@@ -80,9 +80,7 @@ const RequestTab = ({ projectId }: { projectId: Id<"projects"> }) => {
               </Avatar>
 
               <div className="flex items-center gap-3">
-                <span className="font-semibold truncate max-w-[180px]">
-                  {request.userName}
-                </span>
+                <span className="font-semibold truncate max-w-[180px]">{request.userName}</span>
                 <span className="text-xs px-2 py-0.5 rounded-full dark:bg-blue-500/10 bg-blue-500/20 text-blue-500 border border-blue-500/20 capitalize">
                   {request.source}
                 </span>

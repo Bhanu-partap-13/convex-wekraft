@@ -1,7 +1,9 @@
 "use server";
 
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
+import { clerkClient } from "@clerk/nextjs/server";
 import { Octokit } from "octokit";
+import pLimit from "p-limit";
 
 // ========================================
 // GETTING GITHUB ACCESS TOKEN FROM CLERK
@@ -403,73 +405,138 @@ function shouldIncludeFile(filePath: string): boolean {
 // commitsLast60Days
 // prMergeRate
 // ============================================
+// export const getProjectHealthData = async (owner: string, repo: string) => {
+//   console.log(`📊 Fetching health data for: ${owner}/${repo}`);
+
+//   const token = await getGithubAccessToken();
+//   const octokit = new Octokit({ auth: token });
+
+//   try {
+//     // 1️⃣ Get open issues count
+//     console.log("🔍 Fetching open issues...");
+//     const { data: openIssuesData } = await octokit.rest.issues.listForRepo({
+//       owner,
+//       repo,
+//       state: "open",
+//       per_page: 1, // We only need the count
+//     });
+//     const openIssuesCount = openIssuesData.length;
+//     console.log(`✅ Open issues: ${openIssuesCount}`);
+
+//     // 2️⃣ Get closed issues count
+//     console.log("🔍 Fetching closed issues...");
+//     const { data: closedIssuesData } = await octokit.rest.issues.listForRepo({
+//       owner,
+//       repo,
+//       state: "closed",
+//       per_page: 1, // We only need the count
+//     });
+//     const closedIssuesCount = closedIssuesData.length;
+//     console.log(`✅ Closed issues: ${closedIssuesCount}`);
+
+//     // 3️⃣ Get last commit date
+//     console.log("🔍 Fetching last commit date...");
+//     const { data: repoData } = await octokit.rest.repos.get({
+//       owner,
+//       repo,
+//     });
+//     const lastCommitDate = repoData.pushed_at;
+//     console.log(`✅ Last commit date: ${lastCommitDate}`);
+
+//     // 4️⃣ Get commits from last 60 days
+//     const sixtyDaysAgo = new Date();
+//     sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+
+//     console.log("🔍 Fetching commits from last 60 days...");
+//     const { data: commits } = await octokit.rest.repos.listCommits({
+//       owner,
+//       repo,
+//       since: sixtyDaysAgo.toISOString(),
+//       per_page: 100,
+//     });
+//     const commitsLast60Days = commits.length;
+//     console.log(`✅ Commits in last 60 days: ${commitsLast60Days}`);
+
+//     // 5️⃣ Get PR merge rate
+//     console.log("🔍 Fetching pull requests...");
+//     const { data: allPRs } = await octokit.rest.pulls.list({
+//       owner,
+//       repo,
+//       state: "all",
+//       per_page: 100,
+//     });
+
+//     const totalPRs = allPRs.length;
+//     const mergedPRs = allPRs.filter((pr) => pr.merged_at !== null).length;
+//     const prMergeRate = totalPRs > 0 ? (mergedPRs / totalPRs) * 100 : 0;
+
+//     console.log(`✅ Total PRs: ${totalPRs}, Merged: ${mergedPRs}`);
+//     console.log(`✅ PR merge rate: ${prMergeRate.toFixed(1)}%`);
+
+//     return {
+//       openIssuesCount,
+//       closedIssuesCount,
+//       lastCommitDate,
+//       commitsLast60Days,
+//       totalPRs,
+//       mergedPRs,
+//       prMergeRate: Math.round(prMergeRate),
+//     };
+//   } catch (error) {
+//     console.error("❌ Error fetching health data:", error);
+//     throw new Error("Failed to fetch project health data");
+//   }
+// };
+
 export const getProjectHealthData = async (owner: string, repo: string) => {
   console.log(`📊 Fetching health data for: ${owner}/${repo}`);
 
   const token = await getGithubAccessToken();
   const octokit = new Octokit({ auth: token });
 
+  const sixtyDaysAgo = new Date();
+  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+
   try {
-    // 1️⃣ Get open issues count
-    console.log("🔍 Fetching open issues...");
-    const { data: openIssuesData } = await octokit.rest.issues.listForRepo({
-      owner,
-      repo,
-      state: "open",
-      per_page: 1, // We only need the count
-    });
+    // 🚀 Execute ALL requests in parallel
+    const [
+      { data: openIssuesData },
+      { data: closedIssuesData },
+      { data: repoData },
+      { data: commits },
+      { data: allPRs },
+    ] = await Promise.all([
+      octokit.rest.issues.listForRepo({
+        owner,
+        repo,
+        state: "open",
+        per_page: 1,
+      }),
+      octokit.rest.issues.listForRepo({
+        owner,
+        repo,
+        state: "closed",
+        per_page: 1,
+      }),
+      octokit.rest.repos.get({ owner, repo }),
+      octokit.rest.repos.listCommits({
+        owner,
+        repo,
+        since: sixtyDaysAgo.toISOString(),
+        per_page: 100,
+      }),
+      octokit.rest.pulls.list({ owner, repo, state: "all", per_page: 100 }),
+    ]);
+
+    // Process results
     const openIssuesCount = openIssuesData.length;
-    console.log(`✅ Open issues: ${openIssuesCount}`);
-
-    // 2️⃣ Get closed issues count
-    console.log("🔍 Fetching closed issues...");
-    const { data: closedIssuesData } = await octokit.rest.issues.listForRepo({
-      owner,
-      repo,
-      state: "closed",
-      per_page: 1, // We only need the count
-    });
     const closedIssuesCount = closedIssuesData.length;
-    console.log(`✅ Closed issues: ${closedIssuesCount}`);
-
-    // 3️⃣ Get last commit date
-    console.log("🔍 Fetching last commit date...");
-    const { data: repoData } = await octokit.rest.repos.get({
-      owner,
-      repo,
-    });
     const lastCommitDate = repoData.pushed_at;
-    console.log(`✅ Last commit date: ${lastCommitDate}`);
-
-    // 4️⃣ Get commits from last 60 days
-    const sixtyDaysAgo = new Date();
-    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
-
-    console.log("🔍 Fetching commits from last 60 days...");
-    const { data: commits } = await octokit.rest.repos.listCommits({
-      owner,
-      repo,
-      since: sixtyDaysAgo.toISOString(),
-      per_page: 100,
-    });
     const commitsLast60Days = commits.length;
-    console.log(`✅ Commits in last 60 days: ${commitsLast60Days}`);
-
-    // 5️⃣ Get PR merge rate
-    console.log("🔍 Fetching pull requests...");
-    const { data: allPRs } = await octokit.rest.pulls.list({
-      owner,
-      repo,
-      state: "all",
-      per_page: 100,
-    });
 
     const totalPRs = allPRs.length;
     const mergedPRs = allPRs.filter((pr) => pr.merged_at !== null).length;
     const prMergeRate = totalPRs > 0 ? (mergedPRs / totalPRs) * 100 : 0;
-
-    console.log(`✅ Total PRs: ${totalPRs}, Merged: ${mergedPRs}`);
-    console.log(`✅ PR merge rate: ${prMergeRate.toFixed(1)}%`);
 
     return {
       openIssuesCount,
@@ -647,3 +714,533 @@ export async function getLatestCommitSHA(
 
   return data.commit.sha;
 }
+
+// =================================
+// GET COMMIT DETAILS WITH FILES
+// =================================
+export async function getCommitDetails(
+  token: string,
+  owner: string,
+  repo: string,
+  commitSha: string,
+) {
+  const octokit = new Octokit({ auth: token });
+
+  try {
+    console.log("Fetching commits contents");
+    const { data: commit } = await octokit.rest.repos.getCommit({
+      owner,
+      repo,
+      ref: commitSha,
+    });
+
+    // Limit files processed to prevent rate limits & token overflow
+    const filesToProcess = (commit.files || []).slice(0, 20); // Max 20 files
+
+    const files = await Promise.all(
+      filesToProcess.map(async (file) => {
+        // Skip removed files
+        if (file.status === "removed") return null;
+
+        // Skip files we don't want to review (binary, configs, etc.)
+        if (!shouldIncludeFile(file.filename)) return null;
+
+        // Skip files that are too large (>100KB)
+        if ((file.changes || 0) > 1000) {
+          console.log(
+            `⚠️ Skipping large file: ${file.filename} (${file.changes} changes)`,
+          );
+          return null;
+        }
+
+        try {
+          // Fetch full file content at this commit
+          const { data: fileData } = await octokit.rest.repos.getContent({
+            owner,
+            repo,
+            path: file.filename,
+            ref: commitSha,
+          });
+
+          // Ensure it's a file (not a directory) with content
+          if (
+            Array.isArray(fileData) ||
+            fileData.type !== "file" ||
+            !fileData.content
+          ) {
+            return null;
+          }
+
+          // Decode base64 content
+          const content = Buffer.from(fileData.content, "base64").toString(
+            "utf-8",
+          );
+
+          // Additional safety: skip if content is massive
+          if (content.length > 50000) {
+            // 50KB limit
+            console.log(`⚠️ Skipping large content: ${file.filename}`);
+            return {
+              filename: file.filename,
+              status: file.status,
+              additions: file.additions || 0,
+              deletions: file.deletions || 0,
+              patch: file.patch || "",
+              content: "// Content too large to include",
+            };
+          }
+
+          return {
+            filename: file.filename,
+            status: file.status,
+            additions: file.additions || 0,
+            deletions: file.deletions || 0,
+            patch: file.patch || "",
+            content: content,
+          };
+        } catch (error) {
+          // File might not exist at this ref or API error
+          console.error(
+            `❌ Failed to fetch content for ${file.filename}:`,
+            error,
+          );
+          return {
+            filename: file.filename,
+            status: file.status,
+            additions: file.additions || 0,
+            deletions: file.deletions || 0,
+            patch: file.patch || "",
+            content: null, // Indicate failure but keep file in results
+          };
+        }
+      }),
+    );
+
+    // Filter out null entries
+    const validFiles = files.filter(
+      (f): f is NonNullable<typeof f> => f !== null,
+    );
+
+    return {
+      sha: commit.sha,
+      message: commit.commit.message,
+      author: commit.commit.author?.name || "Unknown",
+      date: commit.commit.author?.date,
+      files: validFiles,
+      // Real GitHub username (fallback to git name)
+      authorName:
+        commit.author?.login || commit.commit.author?.name || "Unknown",
+
+      // Real GitHub avatar (fallback to null)
+      authorAvatar:
+        commit.author?.avatar_url || commit.committer?.avatar_url || null,
+      stats: {
+        totalFiles: validFiles.length,
+        totalAdditions: validFiles.reduce((sum, f) => sum + f.additions, 0),
+        totalDeletions: validFiles.reduce((sum, f) => sum + f.deletions, 0),
+      },
+    };
+  } catch (error) {
+    console.error(`❌ Failed to fetch commit ${commitSha}:`, error);
+    throw new Error(`Failed to fetch commit details: ${error}`);
+  }
+}
+
+// =================================
+// HANDLE PUSH EVENT
+// =================================
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "../../../convex/_generated/api";
+import { inngest } from "@/inngest/client";
+
+export async function handlePushEvent(payload: any) {
+  const { repository, commits, pusher, sender } = payload;
+  console.log("Sender and pusher============================>", sender, pusher);
+  const avatarUrl = sender.avatar_url;
+  console.log("avatar_URL---------->", avatarUrl);
+  const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+
+  // 1. Get Repo & User
+  console.log("Fetching repo data");
+  const repoData = await convex.query(api.repos.getRepoByGithubId, {
+    githubId: BigInt(repository.id) as any,
+  });
+  console.log("Repo data fetched:", repoData);
+
+  if (!repoData) {
+    console.log("Repository not found in database:", repository.full_name);
+    return { message: "Repository not found", status: "skipped" };
+  }
+
+  const userData = await convex.query(api.users.getUser, {
+    userId: repoData.userId,
+  });
+
+  if (!userData) {
+    console.log("User not found for repo:", repoData.name);
+    return { message: "User not found", status: "skipped" };
+  }
+
+  if (!userData.clerkUserId) {
+    console.error("Clerk User ID not found for user:", userData.name);
+    return { message: "Clerk User ID not found", status: "failed" };
+  }
+
+  const token = await getUserGithubToken(userData.clerkUserId);
+
+  if (!token) {
+    console.error("GitHub token not found for user:", userData.name);
+    return { message: "GitHub token not found", status: "failed" };
+  }
+  console.log("Token found for user:", userData.name);
+
+  // Process each commit
+  const results = [];
+  for (const commit of commits) {
+    console.log(`Processing commit: ${commit.id}`);
+
+    // 2. Fetch commit details (files & content)
+    console.log("Fetching commits contents");
+    const commitDetails = await getCommitDetails(
+      token,
+      repository.owner.name || repository.owner.login,
+      repository.name,
+      commit.id,
+    );
+    // console.log("Commit details fetched:", commitDetails);
+
+    // 3. Create initial review record (pending)
+    const reviewId = await convex.mutation(api.projects.createReview, {
+      repoId: repoData._id,
+      pushTitle: commit.message || "No title",
+      pushUrl: commit.url,
+      commitHash: commit.id,
+      authorUserName: commit.author.name || pusher.name,
+      authorAvatar: commit.author.avatar_url || avatarUrl,
+      reviewType: "commit",
+      reviewStatus: "pending",
+    });
+    console.log("Review created:", reviewId);
+
+    // 4. Send Inngest Event to trigger AI review
+    console.log("Sending Inngest event");
+    await inngest.send({
+      name: "commit/analyze",
+      data: {
+        reviewId,
+        commitDetails,
+        repoId: repoData._id,
+      },
+    });
+
+    // Increment usage limit
+    // await convex.mutation(api.users.incrementCommitCount, {
+    //   userId: userData._id,
+    // });
+
+    results.push({ commit: commit.id, status: "queued" });
+  }
+
+  return { message: "Processed", results };
+}
+
+// =========================================================
+//  GITHUB TREE VISUALIZER
+// =========================================================
+
+interface FolderRisk {
+  path: string;
+  name: string;
+  filesChanged: number;
+}
+
+const SKIP_FOLDERS = new Set([
+  // Node / JS
+  "node_modules",
+  ".next",
+  ".nuxt",
+  ".output",
+  "dist",
+  "build",
+  "out",
+  ".cache",
+  ".turbo",
+  ".vercel",
+  ".parcel-cache",
+  ".vite",
+  ".expo",
+  // Git
+  ".git",
+  ".github",
+  // Logs & coverage
+  "coverage",
+  "logs",
+  // Public static heavy assets
+  "public/assets",
+  "public/images",
+  "public/fonts",
+  "assets",
+  "static",
+  // IDE / Editor
+  ".vscode",
+  ".idea",
+  // Python
+  "__pycache__",
+  ".pytest_cache",
+  ".mypy_cache",
+  ".venv",
+  "venv",
+  "env",
+  // Java / Kotlin
+  ".gradle",
+  "target",
+  "build",
+  // PHP
+  "vendor",
+  // Ruby
+  ".bundle",
+  // Go
+  "bin",
+  "pkg",
+  // Rust
+  "target",
+  // Swift / Xcode
+  "DerivedData",
+  ".build",
+  // Docker
+  ".docker",
+  // Terraform
+  ".terraform",
+  // Misc
+  "tmp",
+  "temp",
+]);
+
+function shouldSkipFolder(folderPath: string): boolean {
+  const parts = folderPath.split("/");
+  return parts.some((part) => SKIP_FOLDERS.has(part));
+}
+
+export async function getFolderRiskHeatmap(
+  token: string,
+  owner: string,
+  repo: string,
+  branch: string = "main",
+  commitLimit: number = 10,
+): Promise<FolderRisk[]> {
+  const octokit = new Octokit({ auth: token });
+  const limit = pLimit(5);
+
+  // 1️⃣ Get tree structure
+  const { data: branchData } = await octokit.rest.repos.getBranch({
+    owner,
+    repo,
+    branch,
+  });
+
+  const { data: treeData } = await octokit.rest.git.getTree({
+    owner,
+    repo,
+    tree_sha: branchData.commit.sha,
+    recursive: "true",
+  });
+
+  // 2️⃣ Extract folders (with filtering)
+  const folders = new Set<string>();
+
+  treeData.tree.forEach((item) => {
+    if (item.path?.includes("/")) {
+      const pathParts = item.path.split("/");
+
+      for (let i = 1; i <= pathParts.length - 1; i++) {
+        const folderPath = pathParts.slice(0, i).join("/");
+
+        if (!shouldSkipFolder(folderPath)) {
+          folders.add(folderPath);
+        }
+      }
+    }
+  });
+
+  console.log(
+    `📊 Analyzing ${folders.size} folders (filtered from ${treeData.tree.length} items)`,
+  );
+
+  // 3️⃣ Get commits in parallel
+  const { data: commits } = await octokit.rest.repos.listCommits({
+    owner,
+    repo,
+    sha: branch,
+    per_page: commitLimit,
+  });
+
+  const folderChangeCount = new Map<string, Set<string>>();
+
+  // 🚀 Batch commit fetching
+  const commitBatches = [];
+  for (let i = 0; i < commits.length; i += 10) {
+    commitBatches.push(commits.slice(i, i + 10));
+  }
+
+  for (const batch of commitBatches) {
+    await Promise.all(
+      batch.map((commit) =>
+        limit(async () => {
+          try {
+            const { data: commitDetail } = await octokit.rest.repos.getCommit({
+              owner,
+              repo,
+              ref: commit.sha,
+            });
+
+            commitDetail.files?.forEach((file) => {
+              const filePath = file.filename;
+
+              if (shouldSkipFolder(filePath)) return;
+
+              if (filePath.includes("/")) {
+                const pathParts = filePath.split("/");
+
+                for (let i = 1; i <= pathParts.length - 1; i++) {
+                  const folderPath = pathParts.slice(0, i).join("/");
+
+                  if (!shouldSkipFolder(folderPath)) {
+                    if (!folderChangeCount.has(folderPath)) {
+                      folderChangeCount.set(folderPath, new Set());
+                    }
+                    folderChangeCount.get(folderPath)!.add(filePath);
+                  }
+                }
+              }
+            });
+          } catch (error) {
+            console.error(
+              `⚠️ Error fetching commit ${commit.sha.slice(0, 7)}:`,
+              error,
+            );
+          }
+        }),
+      ),
+    );
+  }
+
+  // 4️⃣ Build result array
+  const folderRisks: FolderRisk[] = Array.from(folders)
+    .map((folder) => {
+      const filesChanged = folderChangeCount.get(folder)?.size || 0;
+
+      return {
+        path: folder,
+        name: folder.split("/").pop() || folder,
+        filesChanged,
+      };
+    })
+    .filter((risk) => risk.filesChanged > 0)
+    .sort((a, b) => b.filesChanged - a.filesChanged);
+
+  console.log(`✅ Found ${folderRisks.length} folders with changes`);
+
+  return folderRisks;
+}
+
+// ===================================================
+// GET USER LANGUAGES FOR SKIILS
+// ===================================================
+export const getUserTopLanguages = async (
+  username: string,
+): Promise<string[]> => {
+  console.log(`🔍 Fetching top languages for: ${username}`);
+
+  const token = await getGithubAccessToken();
+  const octokit = new Octokit({ auth: token });
+
+  try {
+    const { data: repos } = await octokit.rest.repos.listForUser({
+      username,
+      per_page: 30,
+      sort: "pushed",
+      direction: "desc",
+      type: "owner",
+    });
+
+    console.log(`📦 Got ${repos.length} repos — counting languages...`);
+
+    // count how many repos each language appears in
+    const counts: Record<string, number> = {};
+    for (const repo of repos) {
+      if (!repo.language) continue;
+      counts[repo.language] = (counts[repo.language] ?? 0) + 1;
+    }
+
+    console.log(`📊 Raw language counts:`, counts);
+
+    const threshold = repos.length * 0.1; // 30 * 0.1 = 3 repos minimum
+    const topLanguages = Object.entries(counts)
+      .filter(([, count]) => count >= threshold)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 4)
+      .map(([lang]) => lang);
+
+    console.log(`✅ Top languages for ${username}:`, topLanguages);
+    return topLanguages;
+  } catch (error) {
+    console.error(`❌ Error fetching languages for ${username}:`, error);
+    return [];
+  }
+};
+
+// ==================================================
+// GET REPO FOLDER STRUCTURE
+// =================================================
+export const getRepoFolderStructure = async (
+  owner: string,
+  repo: string,
+): Promise<string> => {
+  console.log(`📁 Fetching folder structure for: ${owner}/${repo}`);
+
+  const token = await getGithubAccessToken();
+  const octokit = new Octokit({ auth: token });
+
+  try {
+    const { data } = await octokit.rest.git.getTree({
+      owner,
+      repo,
+      tree_sha: "HEAD",
+      recursive: "true", // single call — gets everything flat
+    });
+
+    console.log(
+      `🌳 Got ${data.tree.length} total items — filtering folders...`,
+    );
+
+    // only keep folders (blobs are files, trees are folders)
+    const folders = data.tree
+      .filter((item) => item.type === "tree")
+      .map((item) => item.path!)
+      .filter((path) => {
+        const depth = path.split("/").length;
+        return depth <= 3; // max 3 levels deep — enough signal, no noise
+      });
+
+    console.log(`📂 Found ${folders.length} folders (max depth 3)`);
+
+    // build a readable tree string
+    const tree = folders
+      .map((path) => {
+        const depth = path.split("/").length - 1;
+        const name = path.split("/").pop()!;
+        const indent = "  ".repeat(depth);
+        return `${indent}📁 ${name}`;
+      })
+      .join("\n");
+
+    console.log(`✅ Folder structure:\n${tree}`);
+    return tree;
+  } catch (error) {
+    console.error(
+      `❌ Error fetching folder structure for ${owner}/${repo}:`,
+      error,
+    );
+    return "";
+  }
+};

@@ -1,7 +1,7 @@
 "use client";
 
-import { Handle, type NodeProps, Position } from "@xyflow/react";
 import { memo } from "react";
+import { Handle, Position, NodeProps } from "@xyflow/react";
 import { cn } from "@/lib/utils";
 import type { EntityNode as EntityNodeType } from "@/types/ERmodel";
 
@@ -16,7 +16,7 @@ function EntityNodeComponent({ data, selected }: NodeProps<EntityNodeType>) {
         selected && "ring-2 ring-primary shadow-xl border-primary",
         isHighlighted && "ring-2 ring-blue-500 shadow-xl",
         isDimmed && "opacity-40",
-        !selected && !isHighlighted && "border-border",
+        !selected && !isHighlighted && "border-border"
       )}
     >
       {/* Table Name Header */}
@@ -36,7 +36,7 @@ function EntityNodeComponent({ data, selected }: NodeProps<EntityNodeType>) {
                   key={idx}
                   className={cn(
                     "border-b border-border last:border-0",
-                    "hover:bg-muted/50 transition-colors",
+                    "hover:bg-muted/50 transition-colors"
                   )}
                 >
                   {/* Type Column */}
@@ -45,12 +45,10 @@ function EntityNodeComponent({ data, selected }: NodeProps<EntityNodeType>) {
                   </td>
 
                   {/* Field Name Column */}
-                  <td
-                    className={cn(
-                      "px-3 py-2 text-sm font-medium text-foreground border-r border-border",
-                      (field.isPrimary || field.isForeign) && "font-bold",
-                    )}
-                  >
+                  <td className={cn(
+                    "px-3 py-2 text-sm font-medium text-foreground border-r border-border",
+                    (field.isPrimary || field.isForeign) && "font-bold"
+                  )}>
                     {field.name}
                   </td>
 
@@ -58,24 +56,24 @@ function EntityNodeComponent({ data, selected }: NodeProps<EntityNodeType>) {
                   <td className="px-3 py-2 text-center w-[20%]">
                     <div className="flex items-center justify-center gap-1">
                       {field.isPrimary && (
-                        <span
-                          className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30"
+                        <span 
+                          className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30" 
                           title="Primary Key"
                         >
                           PK
                         </span>
                       )}
                       {field.isForeign && (
-                        <span
-                          className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-blue-500/30"
+                        <span 
+                          className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-blue-500/30" 
                           title="Foreign Key"
                         >
                           FK
                         </span>
                       )}
                       {field.isUnique && !field.isPrimary && (
-                        <span
-                          className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30"
+                        <span 
+                          className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30" 
                           title="Unique"
                         >
                           U

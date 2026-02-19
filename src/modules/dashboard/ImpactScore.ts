@@ -97,7 +97,7 @@ export function calculateImpactScore(stats: GitHubStats): ImpactScoreResult {
   // Much stricter commit cap - 10 per day max (not 20)
   const effectiveCommits = Math.min(
     stats.totalCommits,
-    stats.accountAgeInYears * 365 * 20,
+    stats.accountAgeInYears * 365 * 20
   );
 
   // Calculate weighted contributions
@@ -178,9 +178,10 @@ export function calculateImpactScore(stats: GitHubStats): ImpactScoreResult {
   } else if (rawScore >= 90) {
     // Raised from 80
     tier = "Elite Contributor";
-  } else if (rawScore >= 70) {
+  }else if(rawScore >= 70){
     tier = "Passionate Contributor";
-  } else if (rawScore >= 55) {
+  }
+   else if (rawScore >= 55) {
     // Raised from 60
     tier = "Active Professional";
   } else if (rawScore >= 35) {

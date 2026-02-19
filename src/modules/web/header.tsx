@@ -1,10 +1,16 @@
 "use client";
-import { UserButton } from "@clerk/nextjs";
-import { Authenticated, Unauthenticated } from "convex/react";
-import { Rocket, Settings, Ticket } from "lucide-react";
 import Link from "next/link";
-import { BarLoader } from "react-spinners";
 import { Button } from "@/components/ui/button";
+import { Rocket, Settings, Sparkles, Ticket } from "lucide-react";
+import {
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from "@clerk/nextjs";
+import { Authenticated, Unauthenticated } from "convex/react";
+import { BarLoader } from "react-spinners";
 import { useStoreUser } from "@/hooks/use-user-store";
 
 export function Navbar() {
@@ -83,10 +89,7 @@ export function Navbar() {
 
       {/* LOADERS */}
       {isLoading && (
-        <div
-          className="absolute bottom-0 left-0 w-full"
-          suppressHydrationWarning
-        >
+        <div className="absolute bottom-0 left-0 w-full">
           <BarLoader width={"100%"} color="#6c47ff" />
         </div>
       )}

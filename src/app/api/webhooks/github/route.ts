@@ -1,4 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { handlePushEvent } from "@/modules/github/action";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
         "============Pushed Event Triggered for COMMIT !============",
       );
       // console.log("============FOR PUSH COMMIT DETAILS : ===================", body)
-      const _commits = body.commits || [];
+      const commits = body.commits || [];
       const repo = body.repository.full_name;
       const [owner, repoName] = repo.split("/");
       const branch = body.ref.replace("refs/heads/", "");
@@ -26,6 +27,14 @@ export async function POST(req: NextRequest) {
       console.log("repoName", repoName);
       console.log("branch", branch);
       console.log("pusher", pusher);
+      handlePushEvent(body)
+        .then(() => console.log(`✅ Push Event Processed`))
+        .catch((err: any) => console.error(`❌ Error:`, err));
+
+      return NextResponse.json(
+        { message: "Webhook received" },
+        { status: 202 },
+      );
     }
     // ===============================
     // ISSUES
@@ -37,7 +46,7 @@ export async function POST(req: NextRequest) {
       const issue = body.issue;
       const repo = body.repository.full_name;
       const sender = body.sender; // ✅ Person who triggered the action
-      const [_owner, _repoName] = repo.split("/");
+      const [owner, repoName] = repo.split("/");
 
       //     Issue event received: {
       // action: 'closed',
@@ -113,7 +122,7 @@ export async function POST(req: NextRequest) {
         prUrl,
         repo,
       });
-      const [_owner, _repoName] = repo.split("/");
+      const [owner, repoName] = repo.split("/");
 
       if (action === "opened") {
         console.log("Triggering AI review for new PR...");

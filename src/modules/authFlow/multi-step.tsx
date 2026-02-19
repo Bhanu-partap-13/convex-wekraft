@@ -1,25 +1,29 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  Briefcase,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Copy,
-  GitBranchPlus,
-  Github,
-  Globe,
-  Layers,
-  Loader2,
-  Lock,
-  LucideUser,
-  Phone,
-  Search,
-  User,
-  Users,
-} from "lucide-react";
 import * as React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronRight,
+  ChevronLeft,
+  Check,
+  Search,
+  Plus,
+  X,
+  Github,
+  Send,
+  User,
+  Globe,
+  Phone,
+  Briefcase,
+  Layers,
+  Users,
+  GitBranchPlus,
+  LucideUser,
+  Lock,
+  Unlock,
+  Loader2,
+  Copy,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,19 +39,19 @@ const STEPS = [
 const TAG_OPTIONS = ["AI", "Web3", "ML", "SaaS", "DevTools", "Open Source"];
 
 import { useMutation, useQuery } from "convex/react";
-import Image from "next/image";
+import { api } from "../../../convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Image from "next/image";
+import { RepositoryList } from "./use-repo";
 import {
   generateInviteCode,
   getInviteLink,
-  shareViaDiscord,
-  shareViaGmail,
   shareViaWhatsApp,
+  shareViaGmail,
+  shareViaDiscord,
 } from "@/lib/invite";
-import { api } from "../../../convex/_generated/api";
-import type { Doc } from "../../../convex/_generated/dataModel";
-import { RepositoryList } from "./use-repo";
+import { Doc } from "../../../convex/_generated/dataModel";
 
 export function MultiStepOnboarding() {
   const user: Doc<"users"> | undefined | null = useQuery(
@@ -100,7 +104,7 @@ export function MultiStepOnboarding() {
     toast.success("Link copied to clipboard");
   };
 
-  const [_localConnectingId, _setLocalConnectingId] = React.useState<
+  const [localConnectingId, setLocalConnectingId] = React.useState<
     number | null
   >(null);
 
@@ -125,11 +129,16 @@ export function MultiStepOnboarding() {
         return;
       }
 
+      if (!user) {
+        toast.error("User data not loaded yet. Please wait a moment and try again.");
+        return;
+      }
+
       setIsLoading(true);
       try {
         await createProject({
           projectName,
-          description: "", // Optional at start , can be updated later
+          description: "",
           tags: selectedTags,
           isPublic,
           repositoryId: storedRepo._id,
@@ -138,8 +147,8 @@ export function MultiStepOnboarding() {
           repoOwner: storedRepo.owner,
           repoUrl: storedRepo.url,
           inviteLink: inviteLink,
-          ownerName: user?.name ?? "",
-          ownerImage: user?.imageUrl ?? "",
+          ownerName: user.name ?? "Anonymous",
+          ownerImage: user.imageUrl ?? "",
         });
 
         setDirection(1);
@@ -350,7 +359,7 @@ export function MultiStepOnboarding() {
 
                   <RepositoryList
                     searchQuery={searchQuery}
-                    selectedRepo={selectedRepo ?? null}
+                    selectedRepo={selectedRepo!}
                     setSelectedRepo={setSelectedRepo}
                   />
                 </div>
@@ -394,7 +403,6 @@ export function MultiStepOnboarding() {
                       <div className="flex flex-wrap gap-2">
                         {TAG_OPTIONS.map((tag) => (
                           <button
-                            type="button"
                             key={tag}
                             onClick={() => toggleTag(tag)}
                             className={cn(
@@ -421,13 +429,7 @@ export function MultiStepOnboarding() {
                       </Label>
                       <div className="grid grid-cols-2 gap-3">
                         <div
-                          role="button"
-                          tabIndex={0}
                           onClick={() => setIsPublic(true)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ")
-                              setIsPublic(true);
-                          }}
                           className={cn(
                             "cursor-pointer p-2 rounded-xl border flex items-center gap-3 transition-all",
                             isPublic
@@ -452,13 +454,7 @@ export function MultiStepOnboarding() {
                         </div>
 
                         <div
-                          role="button"
-                          tabIndex={0}
                           onClick={() => setIsPublic(false)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ")
-                              setIsPublic(false);
-                          }}
                           className={cn(
                             "cursor-pointer p-2 rounded-xl border flex items-center gap-3 transition-all",
                             !isPublic

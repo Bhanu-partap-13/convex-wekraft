@@ -1,10 +1,10 @@
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import type { Id } from "../../convex/_generated/dataModel";
+import { Id } from "../../convex/_generated/dataModel";
 
 export function useProjectRole(projectId: Id<"projects">) {
   const roleInfo = useQuery(api.projects.getMyProjectRole, { projectId });
-
+  
   return {
     isOwner: roleInfo?.isOwner,
     isAdmin: roleInfo?.isAdmin,

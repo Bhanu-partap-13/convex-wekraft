@@ -1,16 +1,4 @@
 "use client";
-import { useChat } from "@ai-sdk/react";
-import {
-  DefaultChatTransport,
-  lastAssistantMessageIsCompleteWithApprovalResponses,
-} from "ai";
-import { AlertCircle, Copy, RefreshCw } from "lucide-react";
-import { useState } from "react";
-import {
-  Conversation,
-  ConversationContent,
-} from "@/components/ai-elements/conversation";
-import { Loader } from "@/components/ai-elements/loader";
 import {
   Message,
   MessageAction,
@@ -30,17 +18,40 @@ import {
   ToolInput,
   ToolOutput,
 } from "@/components/ai-elements/tool";
-import { VoiceButton } from "@/components/elevenLabs/VoiceButton";
+import {
+  Conversation,
+  ConversationContent,
+  ConversationEmptyState,
+  ConversationScrollButton,
+} from "@/components/ai-elements/conversation";
+import { Loader } from "@/components/ai-elements/loader";
+import { useChat } from "@ai-sdk/react";
+import {
+  DefaultChatTransport,
+  lastAssistantMessageIsCompleteWithApprovalResponses,
+} from "ai";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogTrigger,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import type { Id } from "../../../../../../../../convex/_generated/dataModel";
+
+import React, { useState } from "react";
 import { OrbDemo } from "./OrbUse";
+import { useParams } from "next/navigation";
+import { Id } from "../../../../../../../../convex/_generated/dataModel";
+import {
+  AlertCircle,
+  Copy,
+  LucideBrain,
+  MessageSquare,
+  RefreshCw,
+} from "lucide-react";
+import { VoiceButton } from "@/components/elevenLabs/VoiceButton";
 
 interface DialogOrbProps {
   isOrbOpen: boolean;
@@ -49,25 +60,34 @@ interface DialogOrbProps {
 }
 
 const DialogOrb = ({ isOrbOpen, setIsOrbOpen, repoId }: DialogOrbProps) => {
+  const params = useParams();
+  const projectId = params.id as Id<"projects">;
   const [input, setInput] = useState("");
   const [voiceState, setVoiceState] = useState<
     "idle" | "recording" | "processing" | "success" | "error"
   >("idle");
 
-  //   {/* Processing */}
-  // <VoiceButton state="processing" />
+    //   {/* Processing */}
+    // <VoiceButton state="processing" />
+ 
+    // {/* Success feedback */}
+    // <VoiceButton state="success" />
+ 
+    // {/* Error feedback */}
+    // <VoiceButton state="error" />
 
-  // {/* Success feedback */}
-  // <VoiceButton state="success" />
-
-  // {/* Error feedback */}
-  // <VoiceButton state="error" />
-
-  const { messages, sendMessage, status } = useChat({
+  const {
+    messages,
+    sendMessage,
+    status,
+    setMessages,
+    addToolApprovalResponse,
+  } = useChat({
     transport: new DefaultChatTransport({
-      api: "/api/ai/voice-chat",
+      api: "/api/agent/chat",
       body: {
         repoId,
+        projectId,
       },
     }),
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
@@ -107,7 +127,9 @@ const DialogOrb = ({ isOrbOpen, setIsOrbOpen, repoId }: DialogOrbProps) => {
         <div className="max-h-[299px] overflow-auto p-2 flex flex-col">
           <Conversation>
             <ConversationContent>
-              {messages.length === 0 ? null : (
+              {messages.length === 0 ? (
+                <></>
+              ) : (
                 <>
                   {messages.map((message, messageIndex) => {
                     const isLastMessage = messageIndex === messages.length - 1;

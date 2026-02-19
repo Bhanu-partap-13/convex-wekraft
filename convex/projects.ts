@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 
 export const create = mutation({
   args: {
@@ -13,8 +14,8 @@ export const create = mutation({
     repoFullName: v.string(),
     repoOwner: v.string(),
     repoUrl: v.string(),
-    ownerName: v.string(),
-    ownerImage: v.string(),
+    ownerName: v.optional(v.string()),
+    ownerImage: v.optional(v.string()),
     inviteLink: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -71,8 +72,9 @@ export const create = mutation({
       repoUrl: args.repoUrl,
       ownerId: user._id,
       inviteLink: args.inviteLink,
-      ownerName: user.name,
-      ownerImage: user.imageUrl,
+      ownerName: user.name ?? args.ownerName ?? "Anonymous",
+      // @ts-ignore
+      ownerImage: user.imageUrl ?? args.ownerImage ?? "",
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -121,10 +123,10 @@ export const getProjectById = query({
     projectId: v.id("projects"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return null;
-    }
+    // const identity = await ctx.auth.getUserIdentity();
+    // if (!identity) {
+    //   return null;
+    // }
 
     const project = await ctx.db.get(args.projectId);
 
@@ -653,14 +655,14 @@ export const searchAndRank = query({
       // Check tags match
       let tagMatch = true;
       if (hasTags) {
-        tagMatch = project.tags.some((tag) => args.tags?.includes(tag));
+        tagMatch = project.tags.some((tag) => args.tags!.includes(tag));
       }
 
       // Check roles match
       let roleMatch = true;
       if (hasRoles) {
         roleMatch = project.lookingForMembers
-          ? project.lookingForMembers.some((m) => args.roles?.includes(m.role))
+          ? project.lookingForMembers.some((m) => args.roles!.includes(m.role))
           : false;
       }
 
@@ -690,3 +692,189 @@ export const getProjectMembers = query({
     return members;
   },
 });
+
+// ===============================================
+export const createReview = mutation({
+  args: {
+    repoId: v.id("repositories"),
+    pushTitle: v.string(),
+    pushUrl: v.optional(v.string()),
+    commitHash: v.optional(v.string()),
+    authorAvatar: v.optional(v.string()),
+    authorUserName: v.string(),
+    reviewType: v.union(v.literal("pr"), v.literal("commit")),
+    reviewStatus: v.union(v.literal("pending"), v.literal("completed")),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("reviews", {
+      repoId: args.repoId,
+      pushTitle: args.pushTitle,
+      pushUrl: args.pushUrl,
+      commitHash: args.commitHash,
+      authorAvatar: args.authorAvatar,
+      authorUserName: args.authorUserName,
+      reviewType: args.reviewType,
+      reviewStatus: args.reviewStatus, // pending
+      review: "", // Initial empty review
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+// ===============================================
+export const updateReview = mutation({
+  args: {
+    reviewId: v.id("reviews"),
+    review: v.string(),
+    reviewStatus: v.union(v.literal("completed"), v.literal("failed")),
+    ctiticalIssueFound: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.reviewId, {
+      review: args.review,
+      reviewStatus: args.reviewStatus,
+      ctiticalIssueFound: args.ctiticalIssueFound,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+// ===============================================
+export const createIssue = mutation({
+  args: {
+    repoId: v.id("repositories"),
+    issueTitle: v.string(),
+    issueDescription: v.string(),
+    issueCreatedByUserId: v.optional(v.id("users")),
+    issueCreatedByName: v.optional(v.string()),
+    issueType: v.optional(v.union(v.literal("by_user"), v.literal("by_agent"), v.literal("from_github"))),
+    issueFiles: v.optional(v.string()),
+    issueAssignedTo: v.optional(v.id("users")),
+    issueStatus: v.union(
+      v.literal("assigned"),
+      v.literal("ignored"),
+      v.literal("pending"),
+      v.literal("resolved"),
+    ),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.insert("issues", {
+      repoId: args.repoId,
+      issueTitle: args.issueTitle,
+      issueDescription: args.issueDescription,
+      issueCreatedByUserId: args.issueCreatedByUserId,
+      issueCreatedByName: args.issueCreatedByName,
+      issueType: args.issueType,
+      issueFiles: args.issueFiles,
+      issueAssignedTo: args.issueAssignedTo,
+      issueStatus: args.issueStatus,
+      issueCreatedAt: Date.now(),
+      issueUpdatedAt: Date.now(),
+    });
+  },
+});
+
+// -------------------------
+// PojectDetails
+// --------------------------
+export const getProject_Details = query({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const project = await ctx.db
+      .query("projectDetails")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .first();
+    return project;
+  },
+})
+
+// -----------------------------
+// UPDATE PROJECT DETAILS
+// -----------------------------
+export const updateProjectDetails = mutation({
+  args: {
+    projectId: v.id("projects"),
+    repoId: v.optional(v.id("repositories")),
+    projectTimeline: v.optional(v.string()),
+    projectFeaturesList: v.optional(v.any()), // Array of features
+    projectOverview: v.optional(v.string()),
+    projectStatus: v.optional(
+      v.union(v.literal("completed"), v.literal("incomplete")),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("projectDetails")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .first();
+
+    const data = {
+      projectId: args.projectId,
+      repoId: args.repoId,
+      projectTimeline: args.projectTimeline,
+      projectFeaturesList: args.projectFeaturesList,
+      projectOverview: args.projectOverview,
+      projectStatus: args.projectStatus || "completed",
+    };
+
+    if (existing) {
+      await ctx.db.patch(existing._id, data);
+    } else {
+      await ctx.db.insert("projectDetails", data);
+    }
+  },
+});
+
+// -----------------------------
+// GET TEAM SKILLS
+// -----------------------------
+export const getProjectTeamSkills = query({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return [];
+
+    const members = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    // Include owner and all members
+    const userIds = new Set<string>();
+    userIds.add(project.ownerId);
+    members.forEach((m) => userIds.add(m.userId));
+
+    const teamSkills = [];
+    for (const userId of Array.from(userIds)) {
+      const user = await ctx.db.get(userId as Id<"users">);
+      if (user) {
+        teamSkills.push({
+          userName: user.name,
+          skills: user.skills || [],
+        });
+      }
+    }
+    return teamSkills;
+  },
+});
+
+// =======================================
+// PROJECT_DETAILS TOOL
+export const getProject_detailTool = query({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    const projectDetails = await ctx.db
+      .query("projectDetails")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .first();
+
+    return {
+      projectOverview: projectDetails?.projectOverview,
+      projectTimeline: projectDetails?.projectTimeline,
+      projectFeaturesList: projectDetails?.projectFeaturesList,
+    };
+  }
+})

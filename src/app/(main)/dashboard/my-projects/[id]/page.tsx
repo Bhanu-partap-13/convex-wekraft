@@ -1,58 +1,74 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
-import {
-  ChevronLeft,
-  Code,
-  Copy,
-  GitForkIcon,
-  Github,
-  Globe,
-  ImageIcon,
-  Loader2,
-  Lock,
-  LucideActivity,
-  LucideBrain,
-  LucideExternalLink,
-  LucideInfo,
-  LucidePen,
-  LucideUser2,
-  LucideUserPlus,
-  StarIcon,
-  UploadCloud,
-  UserPlus,
-} from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
 import { useParams } from "next/navigation";
-import type React from "react";
-import { useState } from "react";
-import { toast } from "sonner";
+import React, { useState } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../../../../../convex/_generated/api";
+import { Id } from "../../../../../../convex/_generated/dataModel";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ArrowLeft,
+  Github,
+  Globe,
+  Lock,
+  Calendar,
+  ExternalLink,
+  StarIcon,
+  Code,
+  LucidePen,
+  LucideBrain,
+  LucideChevronsLeftRightEllipsis,
+  UploadCloud,
+  Loader2,
+  ImageIcon,
+  LucideFileText,
+  LucideNotebook,
+  LucideSlack,
+  LucideExternalLink,
+  GitForkIcon,
+  LucideActivity,
+  LucideInfo,
+  ChevronLeft,
+  UserPlus,
+  LucideUser2,
+  Copy,
+  LucideUserPlus,
+} from "lucide-react";
+import Link from "next/link";
+import { formatDistanceToNow } from "date-fns";
 import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
+import StatsTab from "@/modules/my-project/Stats";
+import Image from "next/image";
+import SettingTab from "@/modules/my-project/settingsTab";
+import AboutTab from "@/modules/my-project/Abouttab";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { shareViaDiscord, shareViaGmail, shareViaWhatsApp } from "@/lib/invite";
-import AboutTab from "@/modules/my-project/Abouttab";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTrigger,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 import RequestTab from "@/modules/my-project/ReqTab";
-import StatsTab from "@/modules/my-project/Stats";
-import SettingTab from "@/modules/my-project/settingsTab";
-import { api } from "../../../../../../convex/_generated/api";
-import type { Id } from "../../../../../../convex/_generated/dataModel";
+import { shareViaWhatsApp, shareViaGmail, shareViaDiscord } from "@/lib/invite";
 
 const MyProjectId = () => {
   const params = useParams();
@@ -97,7 +113,7 @@ const MyProjectId = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`Upload failed with status: ${response.status}`);
+        throw new Error("Upload failed with status: " + response.status);
       }
 
       const data = await response.json();
@@ -271,10 +287,10 @@ const MyProjectId = () => {
                             className="cursor-pointer"
                             onClick={() =>
                               shareViaWhatsApp(
-                                inviteLink ?? "",
+                                inviteLink!,
                                 project?.projectName ||
-                                  project?.repoName ||
-                                  "New Project",
+                                project?.repoName ||
+                                "New Project",
                               )
                             }
                           >
@@ -292,10 +308,10 @@ const MyProjectId = () => {
                             className="cursor-pointer"
                             onClick={() =>
                               shareViaGmail(
-                                inviteLink ?? "",
+                                inviteLink!,
                                 project?.projectName ||
-                                  project?.repoName ||
-                                  "New Project",
+                                project?.repoName ||
+                                "New Project",
                               )
                             }
                           >
@@ -312,7 +328,7 @@ const MyProjectId = () => {
                             variant="outline"
                             className="cursor-pointer"
                             onClick={() => {
-                              shareViaDiscord(inviteLink ?? "");
+                              shareViaDiscord(inviteLink!);
                               toast.success("Link copied and opening Discord");
                             }}
                           >
@@ -361,9 +377,8 @@ const MyProjectId = () => {
 
                 {/* Overlay for upload */}
                 <div
-                  className={`absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-                    isUploading ? "opacity-100" : ""
-                  }`}
+                  className={`absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${isUploading ? "opacity-100" : ""
+                    }`}
                 >
                   {isUploading ? (
                     <div className="flex flex-col items-center text-white">
@@ -516,7 +531,7 @@ const MyProjectId = () => {
                         {/* Tooltip */}
                         <TooltipProvider>
                           <Tooltip>
-                            <TooltipTrigger>
+                            <TooltipTrigger asChild>
                               <Button
                                 size="icon-xs"
                                 variant="outline"
@@ -546,7 +561,7 @@ const MyProjectId = () => {
                         {/* Tooltip */}
                         <TooltipProvider>
                           <Tooltip>
-                            <TooltipTrigger>
+                            <TooltipTrigger asChild>
                               <Button
                                 size="icon-xs"
                                 variant="outline"
@@ -602,13 +617,19 @@ const MyProjectId = () => {
                         {/* OWNER */}
                         <div className="flex gap-4 justify-between items-center w-full">
                           <div className="flex items-center gap-4">
-                            <Image
-                              src={project?.ownerImage}
-                              alt={project?.ownerName}
-                              width={40}
-                              height={40}
-                              className="rounded-full"
-                            />
+                            {project?.ownerImage ? (
+                              <Image
+                                src={project.ownerImage}
+                                alt={project?.ownerName ?? "Owner"}
+                                width={40}
+                                height={40}
+                                className="rounded-full"
+                              />
+                            ) : (
+                              <div className="bg-accent h-10 w-10 flex items-center justify-center rounded-full text-sm font-semibold">
+                                {(project?.ownerName ?? project?.repoOwner ?? "?")[0].toUpperCase()}
+                              </div>
+                            )}
                             <p>{project?.ownerName}</p>
                           </div>
                           <p className="text-sm italic">Owner</p>

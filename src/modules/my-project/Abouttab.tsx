@@ -1,23 +1,32 @@
 "use client";
 
-import { useMutation as useTanstackMutation } from "@tanstack/react-query";
+import React, { useState } from "react";
 import { useMutation as useConvexMutation } from "convex/react";
-import { Brain, Edit, FileText, Github, Loader2, Save, X } from "lucide-react";
-import { useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { toast } from "sonner";
+import { useMutation as useTanstackMutation } from "@tanstack/react-query";
+import { api } from "../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Github,
+  Sparkles,
+  FileText,
+  Edit,
+  Save,
+  X,
+  Loader2,
+  Brain,
+} from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { getReadme } from "@/modules/github/action";
-import { api } from "../../../convex/_generated/api";
+import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
 
 const AboutTab = ({ project, isPro }: { project: any; isPro: boolean }) => {
   const updateAbout = useConvexMutation(api.projects.updateAbout);

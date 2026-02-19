@@ -1,15 +1,19 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { type AgentState, Orb } from "@/components/elevenLabs/Orb";
+import { useState } from "react"
 
-let ORBS: [string, string][] = [["#CADCFC", "#A0B9D1"]];
+import { Button } from "@/components/ui/button"
+import { AgentState, Orb } from "@/components/elevenLabs/Orb"
+
+let ORBS: [string, string][] = [
+  ["#CADCFC", "#A0B9D1"],
+]
 
 export function OrbDemo({ small = false }: { small?: boolean }) {
-  const [agent, _setAgent] = useState<AgentState>(null);
+  const [agent, setAgent] = useState<AgentState>(null)
 
-  ORBS = small ? [ORBS[0]] : ORBS;
-  const colors = ORBS[0];
+  ORBS = small ? [ORBS[0]] : ORBS
+  const colors = ORBS[0]
 
   return (
     <div className="">
@@ -18,7 +22,11 @@ export function OrbDemo({ small = false }: { small?: boolean }) {
           <div className="relative block">
             <div className="bg-muted relative h-32 w-32 rounded-full p-1 shadow-[inset_0_2px_8px_rgba(0,0,0,0.1)] dark:shadow-[inset_0_2px_8px_rgba(0,0,0,0.5)]">
               <div className="bg-background h-full w-full overflow-hidden rounded-full shadow-[inset_0_0_12px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_0_12px_rgba(0,0,0,0.3)]">
-                <Orb colors={colors} seed={1000} agentState={agent} />
+                <Orb
+                  colors={colors}
+                  seed={1000}
+                  agentState={agent}
+                />
               </div>
             </div>
           </div>
@@ -52,5 +60,5 @@ export function OrbDemo({ small = false }: { small?: boolean }) {
         </div> */}
       </div>
     </div>
-  );
+  )
 }

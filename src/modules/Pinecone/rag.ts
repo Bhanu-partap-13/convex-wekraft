@@ -1,6 +1,6 @@
-import { google } from "@ai-sdk/google";
-import { embed } from "ai";
 import { pineconeIndex } from "@/lib/pinecone";
+import { embed } from "ai";
+import { google } from "@ai-sdk/google";
 
 interface FileItem {
   path: string;
@@ -55,7 +55,7 @@ function smartChunk(file: FileItem): string[] {
       currentChunk = `File: ${path} (part ${chunks.length + 1})\n\n${line}\n`;
       isFirstChunk = false;
     } else {
-      currentChunk += `${line}\n`;
+      currentChunk += line + "\n";
     }
   }
 
@@ -149,7 +149,7 @@ export async function indexCodebase(
   if (vectors.length > 0) {
     for (let i = 0; i < vectors.length; i += UPSERT_BATCH_SIZE) {
       const batch = vectors.slice(i, i + UPSERT_BATCH_SIZE);
-      // @ts-expect-error
+      // @ts-ignore
       await pineconeIndex.upsert({ records: batch });
       console.log(
         `📤 Upserted batch ${Math.floor(i / UPSERT_BATCH_SIZE) + 1}/${Math.ceil(vectors.length / UPSERT_BATCH_SIZE)}`,
@@ -192,28 +192,26 @@ export async function retrieveContext(query: string, topK: number = 5) {
 export async function deleteRepoVectors(repoId: string) {
   console.log(`Deleting all vectors for repo: ${repoId}`);
   // repoID here is fullname like ronitrai27/repo name
-
+  
   try {
-    const allVectorIds: string[] = [];
-    let paginationToken: string | undefined;
-
+    let allVectorIds: string[] = [];
+    let paginationToken: string | undefined = undefined;
+    
     // Paginate through all results
     do {
-      const listResponse = await pineconeIndex.listPaginated({
+      const listResponse = await pineconeIndex.listPaginated({ 
         prefix: `${repoId}-`,
-        paginationToken,
+        paginationToken
       });
-
-      const vectorIds = listResponse.vectors?.map((v) => v.id) || [];
-      allVectorIds.push(...(vectorIds as any));
-
+      
+      const vectorIds = listResponse.vectors?.map(v => v.id) || [];
+      allVectorIds.push(...vectorIds as any);
+      
       paginationToken = listResponse.pagination?.next;
-
-      console.log(
-        `Found ${vectorIds.length} vectors (total so far: ${allVectorIds.length})`,
-      );
+      
+      console.log(`Found ${vectorIds.length} vectors (total so far: ${allVectorIds.length})`);
     } while (paginationToken);
-
+    
     if (allVectorIds.length > 0) {
       // Delete in batches
       const batchSize = 1000;
@@ -223,10 +221,8 @@ export async function deleteRepoVectors(repoId: string) {
         console.log(`Deleted batch of ${batch.length} vectors`);
       }
     }
-
-    console.log(
-      `✅ Deleted ${allVectorIds.length} vectors for repo: ${repoId}`,
-    );
+    
+    console.log(`✅ Deleted ${allVectorIds.length} vectors for repo: ${repoId}`);
   } catch (error) {
     console.error(`Failed to delete vectors for repo ${repoId}:`, error);
     throw error;

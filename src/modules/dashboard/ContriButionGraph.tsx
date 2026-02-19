@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+import React from "react";
+import { ActivityCalendar } from "react-activity-calendar";
+import { useTheme } from "next-themes";
 
 import { useQuery } from "@tanstack/react-query";
-import { useQuery as useConvexQuery } from "convex/react";
-import { useTheme } from "next-themes";
-import { ActivityCalendar } from "react-activity-calendar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { api } from "../../../convex/_generated/api";
 import { getContributionStats } from ".";
+import { useQuery as useConvexQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 
 const ContributionGraph = () => {
   const { theme } = useTheme();

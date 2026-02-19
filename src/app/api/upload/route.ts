@@ -1,11 +1,11 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { parseSchemaWithGemini } from "@/lib/Gemini";
+import { NextRequest, NextResponse } from "next/server";
 import {
-  applyDagreLayout,
-  ermodelToReactFlow,
   generateSessionId,
+  ermodelToReactFlow,
+  applyDagreLayout,
   validateERModel,
 } from "@/modules/my-project/ErHelper";
+import { parseSchemaWithGemini } from "@/lib/Gemini";
 
 export const maxDuration = 180;
 
@@ -17,20 +17,20 @@ export async function POST(req: NextRequest) {
     if (!schemaContent || typeof schemaContent !== "string") {
       return NextResponse.json(
         { success: false, error: "Schema content is required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     if (schemaContent.trim().length === 0) {
       return NextResponse.json(
         { success: false, error: "Schema content cannot be empty" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // 2. PARSE SCHEMA WITH GEMINI
     console.log("Parsing schema with Gemini...");
-    let ermodel: Awaited<ReturnType<typeof parseSchemaWithGemini>> | undefined;
+    let ermodel;
     try {
       ermodel = await parseSchemaWithGemini(schemaContent);
     } catch (error: unknown) {
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
               ? error.message
               : "Failed to parse schema. Please check the format and try again.",
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
           success: false,
           error: `Schema validation failed: ${validation.errors.join(", ")}`,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
     const { nodes: layoutedNodes, edges: layoutedEdges } = applyDagreLayout(
       nodes,
       edges,
-      "LR", // Left-to-Right layout
+      "LR" // Left-to-Right layout
     );
 
     // 7. RETURN SUCCESS RESPONSE
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
             ? error.message
             : "An unexpected error occurred. Please try again.",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

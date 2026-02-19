@@ -1,9 +1,9 @@
 import { type ClassValue, clsx } from "clsx";
-import dagre from "dagre";
-import { toPng } from "html-to-image";
-import { nanoid } from "nanoid";
 import { twMerge } from "tailwind-merge";
-import type { EntityEdge, EntityNode, ERModel } from "@/types/ERmodel";
+import dagre from "dagre";
+import { nanoid } from "nanoid";
+import { toPng } from "html-to-image";
+import type { ERModel, EntityNode, EntityEdge } from "@/types/ERmodel"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -70,7 +70,7 @@ export function ermodelToReactFlow(ermodel: ERModel): {
 export function applyDagreLayout(
   nodes: EntityNode[],
   edges: EntityEdge[],
-  direction: "LR" | "TB" = "LR",
+  direction: "LR" | "TB" = "LR"
 ): {
   nodes: EntityNode[];
   edges: EntityEdge[];
@@ -124,7 +124,7 @@ export function applyDagreLayout(
 // =======================================
 export async function downloadAsPNG(
   elementId: string,
-  filename: string = "schema-diagram.png",
+  filename: string = "schema-diagram.png"
 ): Promise<void> {
   const element = document.getElementById(elementId);
   if (!element) {
@@ -152,7 +152,7 @@ export async function downloadAsPNG(
 // =======================================
 export function filterNodes(
   nodes: EntityNode[],
-  selectedTables: Set<string>,
+  selectedTables: Set<string>
 ): EntityNode[] {
   return nodes.map((node) => ({
     ...node,
@@ -194,7 +194,7 @@ export function validateERModel(ermodel: ERModel): {
     entity.relations.forEach((relation: any) => {
       if (!entityNames.has(relation.to)) {
         warnings.push(
-          `Relation from "${entity.name}" references non-existent entity "${relation.to}"`,
+          `Relation from "${entity.name}" references non-existent entity "${relation.to}"`
         );
       }
     });

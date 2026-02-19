@@ -6,6 +6,7 @@ export default defineSchema({
   users: defineTable({
     name: v.string(),
     tokenIdentifier: v.string(), //clerk user ID for auth
+    clerkUserId: v.string(),
     email: v.string(),
     imageUrl: v.optional(v.string()),
     hasCompletedOnboarding: v.boolean(),
@@ -17,6 +18,9 @@ export default defineSchema({
 
     // ✅ PROJECT LIMIT
     limit: v.union(v.literal(2), v.literal(5), v.literal(15)),
+    // SKILLS
+    skills: v.optional(v.array(v.string())),
+    lastUpdatedSkillsAt: v.optional(v.number()),
 
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -34,6 +38,8 @@ export default defineSchema({
     url: v.string(),
     // Relation to users table
     userId: v.id("users"),
+    // New additions
+    language: v.optional(v.any()), // store only top 2 languages..
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -98,6 +104,7 @@ export default defineSchema({
     ),
     // New additions
     inviteLink: v.optional(v.string()), // new unique
+    agentMode: v.optional(v.union(v.literal("semi-auto"), v.literal("auto"))),
     // TIME STAMPS----
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -145,4 +152,93 @@ export default defineSchema({
     .index("by_project", ["projectId"])
     .index("by_user", ["userId"])
     .index("by_status", ["status"]),
+
+  // =========REVIEWS TABLE===========
+  reviews: defineTable({
+    repoId: v.id("repositories"),
+    pushTitle: v.string(),
+    pushUrl: v.optional(v.string()),
+    authorUserName: v.optional(v.string()),
+    authorAvatar: v.optional(v.string()),
+    // prNumber: v.optional(v.number()), // for pr
+    commitHash: v.optional(v.string()), // for commit
+    reviewType: v.union(v.literal("pr"), v.literal("commit")),
+    reviewStatus: v.optional(
+      v.union(
+        v.literal("pending"),
+        v.literal("completed"),
+        v.literal("failed"),
+      ),
+    ),
+    ctiticalIssueFound: v.optional(v.boolean()),
+    review: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_repo", ["repoId"])
+    .index("by_push", ["pushTitle"])
+    .index("by_commit", ["commitHash"])
+    .index("by_type", ["reviewType"]),
+
+  // ===============Issues Table==============
+  issues: defineTable({
+    repoId: v.id("repositories"),
+    issueTitle: v.string(),
+    issueDescription: v.string(),
+    issueCreatedByUserId: v.optional(v.id("users")), // in case user creates issue ("by_user")
+    issueCreatedByName: v.optional(v.string()),
+    issueType: v.optional(
+      v.union(
+        v.literal("by_user"),
+        v.literal("by_agent"),
+        v.literal("from_github"),
+      ),
+    ), // this will help to identify the exact issue and can be use to show in repo visulaizer.
+    issueFiles: v.optional(v.string()), // llm will provide the file source
+    issueAssignedTo: v.optional(v.id("users")),
+    issueStatus: v.optional(
+      v.union(
+        v.literal("assigned"),
+        v.literal("ignored"),
+        v.literal("pending"),
+        v.literal("resolved"),
+      ),
+    ),
+    issueCreatedAt: v.number(),
+    issueUpdatedAt: v.number(),
+  })
+    .index("by_repo", ["repoId"])
+    .index("by_status", ["issueStatus"])
+    .index("by_assigned_to", ["issueAssignedTo"]),
+
+  // ------------ADDTIONAL PROJECT_DETAILS TABLE FOR AI -------------------
+  projectDetails: defineTable({
+    projectId: v.id("projects"),
+    repoId: v.optional(v.id("repositories")),
+    projectTimeline: v.optional(v.string()), // by AI
+    projectFeaturesList: v.optional(v.any()), // by AI to know where project goes.
+    projectOverview: v.optional(v.string()), // by AI , after understanding user requirements.
+    projectStatus: v.optional(
+      v.union(v.literal("completed"), v.literal("incomplete")),
+    ), // to check if agent has completed the project or not
+  })
+    .index("by_project", ["projectId"])
+    .index("by_repo", ["repoId"]),
+
+  // ------------------CODE SPACE ---------------------------
+  codespaces: defineTable({
+    projectId: v.id("projects"),
+    createdBy: v.id("users"),
+    updatedBy: v.optional(v.id("users")),
+    codespaceName: v.optional(v.string()),
+    codespaceDescription: v.optional(v.string()),
+    code: v.optional(v.string()),
+    messageHistory: v.optional(v.array(v.any())),
+    // codespaceTeamTags: v.optional(v.array(v.string())), // Future addition.
+    updatedAt: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_project", ["projectId"])
+    .index("by_updated_by", ["updatedBy"])
+    .index("by_created_by", ["createdBy"]),
 });
